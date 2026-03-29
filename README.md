@@ -1,109 +1,64 @@
-# freej2me-web
-Here it is.. the browser version of my [fork of freej2me](https://github.com/zb3/freej2me)!  
+# 🎮 Roylays Plays | Web J2ME Emulator
 
-This uses [CheerpJ](https://cheerpj.com/) (pretty cool) to run Java in a web browser :)
-Running in the browser means you can now safely load any JAR file, since malicious JAR files won't be able to cause any damage thanks to the web platform sandbox.
+Welcome to **Roylays Plays**, a modernized web platform designed to play classic Java ME (`.jar`) mobile games right in your browser! 
 
-## Let's play!
-https://zb3.github.io/freej2me-web/
+We took the incredible core emulator engine of `freej2me-web` and wrapped it in a sleek, full-featured gaming hub with advanced control mapping. 
 
+🚀 **Live App:** [Play Now on Roylays Plays](https://roylays.github.io/Roylays-Plays/web/)
 
-### Keyboard controls
-| **Key** | **Functions As** |
-| :------------: | :--------------: |
-| <kbd>Esc</kbd> | Enter/exit freej2me options |
-| <kbd>F1</kbd> or <kbd>Q</kbd> | Left soft key |
-| <kbd>F2</kbd> or <kbd>W</kbd> | Right soft key |
-| <kbd>0</kbd> to <kbd>9</kbd> | Keypad Numbers |
-| Numpad keys | Numbers with keys 123 and 789 swaped |
-| <kbd>E</kbd> | * |
-| <kbd>R</kbd> | # |
-| <kbd>↑</kbd> | Up |
-| <kbd>↓</kbd> | Down |
-| <kbd>←</kbd> | Left |
-| <kbd>→</kbd> | Right |
-| <kbd>⏎ Enter</kbd> | Action key (OK button) |
+---
 
-#### Phone types and key mappings
-Keys like left/right soft, arrows and the action key have different vendor-specific mappings. By default, freej2me uses the most common **Nokia** mapping, but this can be changed in settings by changing the `Phone type`. Note that in the `Standard` phone, arrow keys are mapped to 2, 4, 6, 8 and the enter key is mapped to 5.
+## ✨ Features
+* 🕹️ **Modern Gaming Hub:** Manage your installed games, view your play history, and save favorites directly in the browser's UI.
+* ⌨️ **Dynamic Control Schemes:** Choose between Classical (Numpad), Modern (WASD + Mouse), or Pro (Gamepad).
+* 🎮 **Plug-and-Play Gamepad Support:** Connect your Xbox, PlayStation, or USB controller with full button mapping and **Haptic Feedback**.
+* 🔒 **Secure & Local:** Powered by WebAssembly, games run entirely in your browser's local sandbox.
 
-When using the numpad keys, the 123 and 789 rows are swapped so as to resemble the key layout on a mobile phone.
+---
 
-## Game doesn't work?
-If a game doesn't work, first try changing the settings. Press the <kbd>Esc</kbd> key, change some settings and then restart the game. Try changing these:
-* display size
-* compatibility flags
-* sound (turn off)
+## 🕹️ Controls & Peripherals
 
-If it still doesn't work you can get more information by looking at the console. Note however that **not every game will work with this emulator**. You can report a bug though.
+We offer three completely different ways to play. You can test your inputs live in the "Controls" menu!
 
+### 1. Classical Controls (Keyboard)
+Traditional layout mimicking old keypads—perfect for purists.
+* **Movement:** Arrow Keys (`↑`, `↓`, `←`, `→`)
+* **Action / OK:** `Enter`
+* **Soft Keys:** `F1` / `Q` (Left)  |  `F2` / `W` (Right)
+* **Keypad:** `0` - `9`
+* **Special Keys:** `E` (*)  |  `R` (#)
+* **Emulator Options:** `Esc`
 
-## What's inside
-* My fork of FreeJ2ME
+### 2. Modern Controls (Keyboard + Mouse)
+Familiar FPS-style layout for modern gamers.
+* **Movement:** `W`, `A`, `S`, `D`
+* **Action / OK:** `Right Click`
+* *(Keypad and Soft Keys remain the same as Classical)*
 
-* Graphics APIs implemented in JS using 2d canvas rendering context (faster than CheerpJ AWT)
+### 3. Pro Controls (Controller) ⚡ *Haptic Feedback*
+Plug in a USB or Bluetooth controller to play mobile classics like console games!
+* **Movement:** `D-Pad`
+* **Action / Enter:** `A`
+* **Back / Right Soft Key:** `B`
+* **Keypad 5 (Fire / Interact):** `X`
+* **Keypad 0:** `Y`
+* **Left / Right Soft Keys:** `LB` / `RB`
+* **Special Keys (* and #):** `LT` / `RT`
 
-* 3D support
-    - Implemented using WebGL 2
-    - M3G from KEmulator rewritten to use OpenGL ES 2, then optimized
-    - Mascot Capsule v3 support from JL-Mod, optimized
+---
 
-* MIDI playback (`libmidi`)
-    - modified and debloated fluidsynth compiled to WebAssembly
-    - WebAudio API + AudioWorkletNode
+## 🛠️ How to Play
+1. Go to the [Roylays Plays Web App](https://roylays.github.io/Roylays-Plays/web/).
+2. Click **Add Game** in the sidebar.
+3. Select your `.jar` file from your computer.
+4. Go to **Home**, click **Play** on your newly installed game, and enjoy! 
 
-* Media playback (`libmedia`)
-    - ffmpeg compiled to WebAssembly (to decode formats like amr)
-    - rudimentary - the file is fully converted before anything can be played
-    - uses a `<video>` tag to play.. "usually" audio :)
+*(Note: If a game is rendering weirdly, press `Esc` during gameplay to tweak the display size or compatibility flags).*
 
-## Building
+---
 
-On the host, you need to have docker installed, currently the image assumes a linux host.
-
-After cloning, build the builder image:
-```
-docker build --build-arg UID=$(id -u) -t freej2me-web-builder builder_image
-```
-
-Build the jar like this:
-```
-docker run --rm -it -uzb3 -w /app -v`pwd`:/app freej2me-web-builder ant
-```
-
-In case you want to rebuild `libmidi` / `libmedia` wasm files, build them like this:
-```
-docker run --rm -it -uzb3 -w /app -v`pwd`:/app freej2me-web-builder web/libmedia/transcode/wasm/build.sh --release
-docker run --rm -it -uzb3 -w /app -v`pwd`:/app freej2me-web-builder web/libmidi/wasm/build.sh --release
-```
-
-## Serving locally
-Thanks to CheerpJ requirements regarding requests with the `Range` header, this is.. not that obvious. In practice, if you just want to serve locally, this one-liner seems to work:
-```
-npx serve -u web
-```
-
-## CheerpJ?
-freej2me-web currently works in the browser thanks to CheerpJ. However, since CheerpJ is proprietary, it introduces some limitations.. notably freej2me-web will not work without an internet connection, and it can be a little slow..
-
-However, freej2me-web intentionally doesn't use its more advanced features like AWT GUI support or wasm JNI modules. In theory it should be possible to port it to a simpler (but most likely slower) VM if CheerpJ stops being available... but it's not planned for now.
-
-## Embedding
-To embed a specific game on your website, you first need to self-host this emulator. The `web` directory should be served, but ensure your server properly supports the `Range` header.
-
-When you want to embed a game, you of course want it to work.. however, a JAR file (even with a JAD descriptor) is often not enough to make it work, because the emulator needs to know the screen size, phone type, and potentially other specific configuration settings. You might even need to preload some RMS data..
-
-Therefore, you must first prepare a `.zip` file for each game as follows:
-
-1.  Install the game within the launcher screen.
-2.  Tweak emulator settings as needed.
-3.  Configure the game if necessary.
-4.  Click "Export Data".
-5.  Identify the App ID: Launch the application and observe the `app` parameter in the URL.
-6.  Locate the App ID folder**: Find the folder named after the App ID within the exported `.zip` file.
-7.  **Create the game's `.zip` file**: Compress all contents of that App ID folder into a new `.zip` file named after the App ID (`[app_id].zip`).
-8.  **Place the `.zip` file**: Put this newly created `.zip` file into the `apps` folder of your hosted emulator (`run.html` and the `apps` folder should be in the same directory)
-
-Once prepared, you can embed the game directly using `run.html?app=[app_id]` without requiring the user to visit the launcher page first.
-
-Note that your iframe dimensions should match the game's screen size or a multiple thereof. To match only the aspect ratio, pass the `fractionScale` parameter to `run.html`, for example: `run.html?app=[app_id]&fractionScale=1`.
+## ⚙️ Under the Hood & Credits
+This project is a customized UI frontend built on top of amazing open-source technology:
+* **Core Emulator:** Powered by [zb3's fork of freej2me](https://github.com/zb3/freej2me-web).
+* **Java Engine:** Runs using [CheerpJ](https://cheerpj.com/) to translate Java bytecode to WebAssembly in real-time.
+* **Graphics & Audio:** Features WebGL 2 for 3D support (M3G, Mascot Capsule v3), and compiled WebAssembly modules (`libmidi`, `libmedia`) for authentic classic mobile audio.
