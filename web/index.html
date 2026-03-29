@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Roylays Plays — Play Java ME games in your browser. A browser-based J2ME emulator powered by CheerpJ." />
+    <title>Roylays Plays — Java ME Emulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  </head>
+
+  <body>
+    <style>
+      /* ===== RESET & ROOT ===== */
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #212121;
+        --bg-dark: #1a1a1a;
+        --bg-darker: #141414;
+
+        /* Glass surfaces */
+        --glass: rgba(33, 33, 33, 0.65);
+        --glass-hover: rgba(33, 33, 33, 0.8);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-border-hover: rgba(255, 255, 255, 0.15);
+        --glass-elevated: rgba(45, 45, 45, 0.7);
+        --glass-blur: 20px;
+
+        /* Accent */
+        --accent-red: #ff0000;
+        --accent-red-dim: rgba(255, 0, 0, 0.15);
+        --accent-red-glow: rgba(255, 0, 0, 0.3);
+        --accent-green: #2ecc71;
+        --accent-green-dim: rgba(46, 204, 113, 0.15);
+        --accent-yellow: #f39c12;
+        --accent-yellow-dim: rgba(243, 156, 18, 0.15);
+        --accent-cyan: #00e5ff;
+        --accent-cyan-dim: rgba(0, 229, 255, 0.12);
+
+        /* Text */
+        --text-primary: #f1f1f1;
+        --text-secondary: rgba(241, 241, 241, 0.7);
+        --text-muted: rgba(241, 241, 241, 0.4);
+        --text-dim: rgba(241, 241, 241, 0.25);
+
+        /* Misc */
+        --radius: 12px;
+        --radius-sm: 8px;
+        --radius-xs: 6px;
+        --radius-lg: 16px;
+        --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        --font: 'Montserrat', 'Segoe UI', -apple-system, sans-serif;
+
+        /* Layout */
+        --sidebar-width: 220px;
+        --topbar-height: 60px;
+      }
+
+      html, body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: var(--font);
+        color: var(--text-primary);
+        background: var(--bg);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* ===== BACKGROUND ===== */
+      .app-background {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background: url('assets/bg.png') center/cover no-repeat;
+        filter: brightness(0.35) saturate(0.8);
+      }
+
+      .app-background::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 30% 20%, rgba(33,33,33,0.3) 0%, rgba(33,33,33,0.7) 100%);
+      }
+
+      /* ===== LOADING SCREEN ===== */
+      #loading {
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        inset: 0;
+        z-index: 9999;
+        background: var(--bg-darker);
+        gap: 24px;
+      }
+
+      .loading-logo-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .loading-logo {
+        width: 80px;
+        height: auto;
+        border-radius: 14px;
+        filter: drop-shadow(0 0 25px rgba(255, 0, 0, 0.4));
+        animation: logoPulse 2s ease-in-out infinite;
+      }
+
+      .loading-spinner-ring {
+        position: absolute;
+        inset: 0;
+        border: 3px solid transparent;
+        border-top-color: var(--accent-red);
+        border-right-color: var(--accent-red);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      .loading-spinner-ring-outer {
+        position: absolute;
+        inset: -8px;
+        border: 2px solid transparent;
+        border-bottom-color: rgba(255,255,255,0.2);
+        border-left-color: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        animation: spin 1.5s linear infinite reverse;
+      }
+
+      .loading-text {
+        font-size: 1.4em;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: var(--text-primary);
+      }
+
+      .loading-subtext {
+        font-size: 0.8em;
+        color: var(--text-muted);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        animation: fadeInOut 2s ease-in-out infinite;
+      }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes logoPulse {
+        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 25px rgba(255,0,0,0.4)); }
+        50% { transform: scale(1.06); filter: drop-shadow(0 0 35px rgba(255,0,0,0.6)); }
+      }
+      @keyframes fadeInOut {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+      }
+
+      /* ===== APP LAYOUT ===== */
+      .app-layout {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        height: 100vh;
+      }
+
+      /* ===== SIDEBAR ===== */
+      .sidebar {
+        width: var(--sidebar-width);
+        height: 100vh;
+        background: var(--glass);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        border-right: 1px solid var(--glass-border);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        overflow-y: auto;
+        z-index: 10;
+      }
+
+      .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--glass-border);
+      }
+
+      .sidebar-brand img {
+        width: 32px;
+        height: auto;
+        border-radius: 6px;
+      }
+
+      .sidebar-brand .brand-name {
+        font-weight: 700;
+        font-size: 1.05em;
+        color: var(--text-primary);
+        letter-spacing: 0.5px;
+      }
+
+      .sidebar-section {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--glass-border);
+      }
+
+      .sidebar-section:last-child {
+        border-bottom: none;
+      }
+
+      .sidebar-section-title {
+        font-size: 0.65em;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text-dim);
+        padding: 6px 20px 8px;
+      }
+
+      .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 20px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.88em;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition);
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        font-family: var(--font);
+      }
+
+      .sidebar-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text-primary);
+      }
+
+      .sidebar-item.active {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text-primary);
+        border-left: 3px solid var(--accent-red);
+        padding-left: 17px;
+      }
+
+      .sidebar-item i {
+        width: 20px;
+        text-align: center;
+        font-size: 1em;
+      }
+
+      /* ===== MAIN AREA ===== */
+      .main-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* ===== TOP BAR ===== */
+      .topbar {
+        height: var(--topbar-height);
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        background: var(--glass);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        border-bottom: 1px solid var(--glass-border);
+        gap: 16px;
+        flex-shrink: 0;
+      }
+
+      .topbar-sync {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(46, 204, 113, 0.12);
+        border: 1px solid rgba(46, 204, 113, 0.2);
+        border-radius: 20px;
+        padding: 5px 14px;
+        font-size: 0.78em;
+        font-weight: 600;
+        color: var(--accent-green);
+      }
+
+      .topbar-sync::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent-green);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+
+      .topbar-search {
+        flex: 1;
+        max-width: 500px;
+        position: relative;
+      }
+
+      .topbar-search input {
+        width: 100%;
+        padding: 9px 16px 9px 40px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        color: var(--text-primary);
+        font-family: var(--font);
+        font-size: 0.88em;
+        outline: none;
+        transition: all var(--transition);
+      }
+
+      .topbar-search input:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--glass-border-hover);
+      }
+
+      .topbar-search input::placeholder {
+        color: var(--text-muted);
+      }
+
+      .topbar-search i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 0.85em;
+      }
+
+      .topbar-spacer { flex: 1; }
+
+      .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .topbar-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xs);
+        color: var(--text-secondary);
+        font-family: var(--font);
+        font-size: 0.78em;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition);
+        white-space: nowrap;
+      }
+
+      .topbar-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--glass-border-hover);
+        color: var(--text-primary);
+      }
+
+      .topbar-btn i {
+        font-size: 0.9em;
+      }
+
+      .topbar-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-red), #cc0000);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85em;
+        color: white;
+        cursor: pointer;
+        margin-left: 4px;
+      }
+
+      /* ===== CONTENT AREA ===== */
+      .content-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+      }
+
+      /* ===== SECTION TITLE ===== */
+      .section-title {
+        font-weight: 700;
+        font-size: 1.1em;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-primary);
+      }
+
+      .section-title i {
+        color: var(--accent-red);
+        font-size: 0.9em;
+      }
+
+      /* ===== GAME CARDS GRID ===== */
+      .game-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 18px;
+        margin-bottom: 32px;
+      }
+
+      .game-card {
+        background: var(--glass);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: all var(--transition-slow);
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+      }
+
+      .game-card:hover {
+        border-color: var(--glass-border-hover);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .game-card-thumb {
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        background: rgba(255, 255, 255, 0.04);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .game-card-thumb img {
+        width: 56px;
+        height: 56px;
+        image-rendering: pixelated;
+        border-radius: var(--radius-xs);
+      }
+
+      .game-card-thumb .play-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        transition: opacity var(--transition);
+      }
+
+      .game-card:hover .play-overlay {
+        opacity: 1;
+      }
+
+      .play-overlay i {
+        font-size: 2em;
+        color: white;
+        filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+      }
+
+      .game-card-info {
+        padding: 12px 14px;
+      }
+
+      .game-card-title {
+        font-size: 0.88em;
+        font-weight: 600;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .game-card-meta {
+        font-size: 0.72em;
+        color: var(--text-muted);
+      }
+
+      .game-card-actions {
+        display: flex;
+        gap: 4px;
+        padding: 0 10px 10px;
+      }
+
+      .game-card-btn {
+        padding: 5px 10px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xs);
+        color: var(--text-secondary);
+        font-family: var(--font);
+        font-size: 0.72em;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition);
+      }
+
+      .game-card-btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--text-primary);
+      }
+
+      /* Empty game list */
+      .game-cards-grid:empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 160px;
+        background: var(--glass);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        border: 1px dashed var(--glass-border);
+        border-radius: var(--radius);
+        color: var(--text-muted);
+        font-size: 0.9em;
+      }
+
+      .game-cards-grid:empty::after {
+        content: 'No games installed yet — Add your first game below!';
+      }
+
+      /* ===== GLASS PANEL ===== */
+      .glass-panel {
+        background: var(--glass);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius);
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .glass-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .glass-panel-title {
+        font-weight: 700;
+        font-size: 1em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .glass-panel-title i {
+        color: var(--accent-red);
+      }
+
+      /* ===== FORM CONTROLS (Glass style) ===== */
+      .form-group {
+        margin-bottom: 14px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        font-size: 0.78em;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      .form-group label.toggle-label {
+        margin-bottom: 8px;
+      }
+
+      input[type="file"],
+      input[type="number"],
+      select,
+      textarea {
+        width: 100%;
+        padding: 9px 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xs);
+        color: var(--text-primary);
+        font-family: var(--font);
+        font-size: 0.88em;
+        transition: all var(--transition);
+        outline: none;
+      }
+
+      input[type="file"] {
+        padding: 8px 10px;
+      }
+
+      input[type="file"]::file-selector-button {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xs);
+        color: var(--text-primary);
+        padding: 6px 14px;
+        font-family: var(--font);
+        font-size: 0.88em;
+        font-weight: 500;
+        cursor: pointer;
+        margin-right: 10px;
+        transition: all var(--transition);
+      }
+
+      input[type="file"]::file-selector-button:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: var(--glass-border-hover);
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: var(--accent-red);
+        box-shadow: 0 0 0 3px var(--accent-red-dim);
+      }
+
+      select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 32px;
+        cursor: pointer;
+      }
+
+      select option {
+        background: #2d2d2d;
+        color: var(--text-primary);
+      }
+
+      textarea {
+        min-height: 70px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+
+      /* ===== SETTINGS GRID ===== */
+      .settings-container {
+        margin-bottom: 16px;
+      }
+
+      .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px 14px;
+      }
+
+      .settings-grid *:nth-child(2n + 1):last-child {
+        grid-column: 1 / -1;
+      }
+
+      .settings-grid label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        font-size: 0.78em;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .settings-grid label.checkbox {
+        font-weight: 400;
+        font-size: 0.88em;
+        display: flex;
+        align-items: center;
+        text-transform: none;
+        letter-spacing: 0;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 6px 0;
+        transition: color var(--transition);
+      }
+
+      .settings-grid label.checkbox:hover {
+        color: var(--accent-red);
+      }
+
+      .settings-grid .checkbox input[type="checkbox"] {
+        margin-right: 10px;
+        width: 16px;
+        height: 16px;
+        accent-color: var(--accent-red);
+        cursor: pointer;
+      }
+
+      .custom-size-inputs {
+        margin-top: 6px;
+        display: flex;
+        gap: 8px;
+      }
+
+      .custom-size-inputs input {
+        width: 50% !important;
+      }
+
+      /* ===== PREVIEW CONTAINER ===== */
+      .preview-container {
+        display: flex;
+        align-items: center;
+        padding: 14px;
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius);
+        margin-bottom: 16px;
+        background: rgba(255,255,255,0.04);
+        gap: 12px;
+      }
+
+      .preview-container .game-name {
+        font-size: 1em;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .preview-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-xs);
+        image-rendering: pixelated;
+        background: rgba(255,255,255,0.04);
+      }
+
+      .manage-controls {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+      }
+
+      .control-button {
+        padding: 6px 12px;
+        font-size: 0.78em;
+        font-family: var(--font);
+        font-weight: 500;
+        line-height: 1;
+        border-radius: var(--radius-xs);
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all var(--transition);
+      }
+
+      .danger-button {
+        background: rgba(255, 82, 82, 0.12);
+        color: #ff5252;
+        border-color: rgba(255, 82, 82, 0.2);
+      }
+
+      .danger-button:hover {
+        background: rgba(255, 82, 82, 0.2);
+      }
+
+      .warning-button {
+        background: var(--accent-yellow-dim);
+        color: var(--accent-yellow);
+        border-color: rgba(243, 156, 18, 0.2);
+      }
+
+      .warning-button:hover {
+        background: rgba(243, 156, 18, 0.2);
+      }
+
+      /* ===== BUTTONS ===== */
+      .btn {
+        padding: 8px 14px;
+        border: none;
+        border-radius: var(--radius-xs);
+        cursor: pointer;
+        font-family: var(--font);
+        font-weight: 500;
+        font-size: 0.82em;
+        transition: all var(--transition);
+      }
+
+      .btn-outline {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid var(--glass-border);
+        color: var(--text-secondary);
+      }
+
+      .btn-outline:hover {
+        background: rgba(255,255,255,0.1);
+        color: var(--text-primary);
+      }
+
+      .btn-full {
+        display: block;
+        width: 100%;
+        padding: 10px 16px;
+      }
+
+      /* ===== SAVE BUTTON ===== */
+      .save-button {
+        display: block;
+        width: 100%;
+        font-family: var(--font);
+        font-size: 0.95em;
+        font-weight: 700;
+        padding: 13px;
+        background: linear-gradient(135deg, var(--accent-red), #cc0000);
+        border: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        color: white;
+        transition: all var(--transition);
+        letter-spacing: 0.5px;
+        margin-top: 8px;
+      }
+
+      .save-button:hover {
+        box-shadow: 0 0 24px var(--accent-red-glow);
+        transform: translateY(-1px);
+      }
+
+      .save-button:active {
+        transform: translateY(0);
+      }
+
+      .save-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      /* ===== INLINE LOADING ===== */
+      .loading-inline {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        gap: 12px;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+      }
+
+      .spinner {
+        border: 3px solid var(--glass-border);
+        border-radius: 50%;
+        border-top-color: var(--accent-red);
+        width: 22px;
+        height: 22px;
+        animation: spin 0.8s linear infinite;
+      }
+
+      /* ===== WARNING MESSAGE ===== */
+      .warning-message {
+        background: var(--accent-yellow-dim);
+        color: var(--accent-yellow);
+        padding: 12px 14px;
+        border-radius: var(--radius-sm);
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid rgba(243, 156, 18, 0.15);
+        font-size: 0.88em;
+      }
+
+      /* ===== AUX FILE UPLOAD ===== */
+      .aux-file-upload {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 16px;
+      }
+
+      .aux-file-upload-btn {
+        display: block;
+        width: 100%;
+        padding: 10px 14px;
+        text-align: center;
+        background: rgba(255,255,255,0.04);
+        border: 1px dashed var(--glass-border);
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all var(--transition);
+        font-size: 0.85em;
+      }
+
+      .aux-file-upload:hover .aux-file-upload-btn {
+        background: rgba(255,255,255,0.08);
+        border-color: var(--accent-red);
+        color: var(--accent-red);
+      }
+
+      .aux-file-upload input[type="file"] {
+        opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+
+      /* ===== ADVANCED SETTINGS ===== */
+      .advanced-settings {
+        margin-top: 16px;
+      }
+
+      .advanced-settings summary {
+        cursor: pointer;
+        padding: 10px 0;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        transition: color var(--transition);
+      }
+
+      .advanced-settings summary:hover {
+        color: var(--text-primary);
+      }
+
+      .advanced-settings summary::before {
+        content: '▸';
+        font-size: 0.9em;
+        transition: transform var(--transition);
+      }
+
+      .advanced-settings[open] summary::before {
+        transform: rotate(90deg);
+      }
+
+      .advanced-settings summary::-webkit-details-marker {
+        display: none;
+      }
+
+      summary h3 {
+        display: inline;
+        font-weight: 600;
+        font-size: 0.95em;
+        margin: 0;
+      }
+
+      /* ===== KEYBOARD CONTROLS ===== */
+      .keyboard-controls {
+        margin-top: 12px;
+      }
+
+      .keyboard-controls summary {
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 0;
+        transition: all var(--transition);
+        color: var(--text-secondary);
+      }
+
+      .keyboard-controls summary:hover {
+        color: var(--text-primary);
+      }
+
+      .keyboard-controls summary::before {
+        content: '▸';
+        font-size: 0.85em;
+        color: var(--text-muted);
+        transition: transform var(--transition);
+      }
+
+      .keyboard-controls[open] summary::before {
+        transform: rotate(90deg);
+      }
+
+      .keyboard-controls summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .keyboard-controls h3 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 0.95em;
+      }
+
+      .keyboard-controls .controls-body {
+        padding: 4px 0 16px;
+      }
+
+      .keyboard-controls table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .keyboard-controls table tr {
+        border-bottom: 1px solid var(--glass-border);
+      }
+
+      .keyboard-controls table tr:last-child {
+        border-bottom: none;
+      }
+
+      .keyboard-controls table td {
+        padding: 8px 4px;
+        font-size: 0.85em;
+        color: var(--text-secondary);
+        vertical-align: middle;
+      }
+
+      .keyboard-controls table td:first-child {
+        white-space: nowrap;
+        padding-right: 16px;
+      }
+
+      .keyboard-controls .key {
+        display: inline-block;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid var(--glass-border);
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-family: var(--font);
+        font-size: 0.85em;
+        font-weight: 500;
+        color: var(--accent-red);
+        min-width: 24px;
+        text-align: center;
+        line-height: 1.4;
+      }
+
+      /* ===== SCROLLBAR ===== */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      /* ===== DISABLED STATE ===== */
+      button:disabled,
+      input:disabled,
+      select:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 768px) {
+        .sidebar {
+          display: none;
+        }
+        .content-area {
+          padding: 16px;
+        }
+        .game-cards-grid {
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 12px;
+        }
+        .topbar-search {
+          max-width: 300px;
+        }
+      }
+    </style>
+
+    <!-- Background -->
+    <div class="app-background"></div>
+
+    <!-- Loading Screen -->
+    <div id="loading">
+      <div class="loading-logo-container">
+        <div class="loading-spinner-ring-outer"></div>
+        <div class="loading-spinner-ring"></div>
+        <img src="assets/logo.png" alt="Roylays Plays" class="loading-logo" />
+      </div>
+      <div class="loading-text">Roylays Plays</div>
+      <div class="loading-subtext" id="loading-status">Initializing...</div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app-layout" id="main" style="display: none">
+
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <div class="sidebar-brand">
+          <img src="assets/logo.png" alt="Logo" />
+          <span class="brand-name">RoyLays</span>
+        </div>
+
+        <div class="sidebar-section">
+          <a class="sidebar-item active" href="#" id="nav-home">
+            <i class="fas fa-home"></i> Home
+          </a>
+          <a class="sidebar-item" href="#" id="nav-games">
+            <i class="fas fa-gamepad"></i> My Games
+          </a>
+          <a class="sidebar-item" href="#" id="nav-add">
+            <i class="fas fa-plus-circle"></i> Add Game
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Library</div>
+          <a class="sidebar-item" href="#" id="nav-history">
+            <i class="fas fa-history"></i> History
+          </a>
+          <a class="sidebar-item" href="#" id="nav-favorites">
+            <i class="fas fa-heart"></i> Favorites
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Settings</div>
+          <a class="sidebar-item" href="#" id="nav-controls">
+            <i class="fas fa-keyboard"></i> Controls
+          </a>
+          <a class="sidebar-item" href="#" id="nav-about">
+            <i class="fas fa-info-circle"></i> About
+          </a>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <div class="main-area">
+
+        <!-- Top Bar -->
+        <header class="topbar">
+          <div class="topbar-sync">SYNC</div>
+
+          <div class="topbar-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search games..." id="search-input" />
+          </div>
+
+          <div class="topbar-spacer"></div>
+
+          <div class="topbar-actions">
+            <button class="topbar-btn" id="import-data-btn">
+              <i class="fas fa-file-import"></i> Import Data
+            </button>
+            <input type="file" id="import-data-file" style="display: none" accept=".zip" />
+
+            <button class="topbar-btn" id="export-data-btn">
+              <i class="fas fa-file-export"></i> Export Data
+            </button>
+            <a id="export-data-link" style="display: none" download="freej2me-data.zip">x</a>
+          </div>
+
+          <div class="topbar-avatar">R</div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <div class="content-area">
+
+          <!-- Installed Games Section -->
+          <div class="section-title">
+            <i class="fas fa-fire"></i> Installed Games
+          </div>
+          <div id="game-list" class="game-cards-grid">
+            <!-- Games are dynamically inserted here by launcher.js -->
+          </div>
+
+          <!-- Add / Edit Game Section -->
+          <div class="glass-panel">
+            <div class="glass-panel-header">
+              <div class="glass-panel-title">
+                <i class="fas fa-plus-circle"></i>
+                <span id="add-edit-text">Add new game</span>
+              </div>
+              <button id="clear-current" class="btn btn-outline">Clear</button>
+            </div>
+
+            <div id="file-input-step">
+              <div class="form-group">
+                <label for="game-file-input">Select JAR file</label>
+                <input type="file" id="game-file-input" accept=".jar" />
+              </div>
+            </div>
+
+            <div id="file-input-jad-step" style="display: none">
+              <div id="warning-message" class="warning-message">
+                <span>⚠️</span>
+                <span>This game requires a JAD file to function properly. Please upload one.</span>
+              </div>
+              <div class="form-group">
+                <label for="upload-descriptor-file-input">Select JAD file</label>
+                <input type="file" id="upload-descriptor-file-input" accept=".jad" />
+              </div>
+              <div class="form-group">
+                <button id="continue-without-jad" class="btn btn-outline btn-full">
+                  Continue without JAD file (might not work)
+                </button>
+              </div>
+            </div>
+
+            <div class="loading-inline" id="file-input-loading" style="display: none">
+              <div class="spinner"></div>
+              <span>Analyzing file...</span>
+            </div>
+
+            <div id="add-manage-step" style="display: none">
+              <div id="preview" class="preview-container">
+                <img class="preview-icon" />
+                <span class="preview-name">Game name</span>
+                <div id="preview-controls" class="manage-controls">
+                  <button id="wipe-data-btn" class="control-button warning-button" title="Wipe Game Data">
+                    Wipe Data
+                  </button>
+                  <button id="uninstall-btn" class="control-button danger-button" title="Uninstall Game">
+                    Uninstall
+                  </button>
+                </div>
+              </div>
+
+              <div id="edit-settings-container" class="settings-container">
+                <div class="aux-file-upload">
+                  <div class="aux-file-upload-btn">
+                    Upload optional JAD descriptor file
+                  </div>
+                  <input type="file" id="aux-jad-file-input" accept=".jad" />
+                </div>
+                <div class="settings-grid">
+                  <div class="form-group">
+                    <label for="phoneType">Phone type</label>
+                    <select id="phoneType">
+                      <option value="Standard">Standard</option>
+                      <option value="Nokia">Nokia</option>
+                      <option value="Motorola">Motorola</option>
+                      <option value="Siemens">Siemens</option>
+                      <option value="SonyEricsson">SonyEricsson</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="screenSize">Screen Size</label>
+                    <select id="screenSize">
+                      <option value="96x65">96x65</option>
+                      <option value="96x96">96x96</option>
+                      <option value="104x80">104x80</option>
+                      <option value="128x128">128x128</option>
+                      <option value="132x176">132x176</option>
+                      <option value="128x160">128x160</option>
+                      <option value="176x208">176x208</option>
+                      <option value="176x220">176x220</option>
+                      <option value="208x208">208x208</option>
+                      <option value="240x320">240x320</option>
+                      <option value="320x240">320x240</option>
+                      <option value="240x400">240x400</option>
+                      <option value="352x416">352x416</option>
+                      <option value="360x640">360x640</option>
+                      <option value="640x360">640x360</option>
+                      <option value="480x800">480x800</option>
+                      <option value="800x480">800x480</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                    <div class="custom-size-inputs" id="edit-custom-size-inputs">
+                      <input type="number" placeholder="Width" id="customWidth" min="1" />
+                      <input type="number" placeholder="Height" id="customHeight" min="1" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="fontSize">Font size</label>
+                    <select id="fontSize">
+                      <option value="0">Dynamic</option>
+                      <option value="1">Small</option>
+                      <option value="2">Medium</option>
+                      <option value="3">Large</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="dgFormat">DirectGraphics format</label>
+                    <select id="dgFormat">
+                      <option value="444">444 RGB</option>
+                      <option value="4444">4444 ARGB</option>
+                      <option value="565">565 ARGB</option>
+                      <option value="888">888 ARGB</option>
+                      <option value="8888">8888 ARGB</option>
+                    </select>
+                  </div>
+                  <label class="checkbox"><input type="checkbox" name="enableSound" /> Enable sound</label>
+                  <label class="checkbox"><input type="checkbox" name="rotate" /> Rotate screen</label>
+                  <label class="checkbox"><input type="checkbox" name="forceFullscreen" /> Force fullscreen</label>
+                  <label class="checkbox"><input type="checkbox" name="textureDisableFilter" /> Disable texture filtering</label>
+                  <label class="checkbox"><input type="checkbox" name="queuedPaint" /> Queue paint events (useful if game hangs)</label>
+                </div>
+                <details class="advanced-settings">
+                  <summary>
+                    <h3>Advanced settings</h3>
+                  </summary>
+                  <div class="form-group">
+                    <label for="editAppProps">Additional App Properties</label>
+                    <textarea id="editAppProps" placeholder="e.g., key: value, one per line"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="editSysProps">Additional System Properties</label>
+                    <textarea id="editSysProps" placeholder="e.g., key: value, one per line"></textarea>
+                  </div>
+                </details>
+              </div>
+              <button class="save-button" id="add-save-button">Add game</button>
+            </div>
+          </div>
+
+          <!-- Keyboard Controls -->
+          <div class="glass-panel" style="padding: 20px;">
+            <div class="glass-panel-header" style="margin-bottom: 20px;">
+              <div class="glass-panel-title">
+                <i class="fas fa-sliders-h"></i>
+                <span>Controls & Peripherals</span>
+              </div>
+              <div class="live-test-badge" id="live-test-badge">
+                <span class="live-dot"></span> LIVE TEST
+              </div>
+            </div>
+
+            <!-- Control Scheme Selector Tabs -->
+            <div class="control-tabs" id="control-tabs">
+              <button class="control-tab active" data-scheme="classical">
+                <i class="fas fa-keyboard"></i> Classical
+              </button>
+              <button class="control-tab" data-scheme="modern">
+                <i class="fas fa-mouse-pointer"></i> Modern
+              </button>
+              <button class="control-tab" data-scheme="pro">
+                <i class="fas fa-gamepad"></i> Pro
+              </button>
+            </div>
+
+            <!-- Classical Scheme -->
+            <div class="control-scheme-panel active" id="scheme-classical">
+              <div class="scheme-card">
+                <div class="scheme-header">
+                  <div class="scheme-icon">🎹</div>
+                  <div>
+                    <div class="scheme-name">Classical Controls</div>
+                    <div class="scheme-desc">Traditional keyboard layout — arrow keys + number pad</div>
+                  </div>
+                  <div class="connection-badges">
+                    <span class="conn-badge connected"><i class="fas fa-keyboard"></i> Keyboard</span>
+                  </div>
+                </div>
+                <div class="test-hint">
+                  <i class="fas fa-hand-pointer"></i>
+                  Press any key to test — matching control will light up
+                </div>
+                <table class="scheme-table">
+                  <tr data-keys="ArrowUp,ArrowDown,ArrowLeft,ArrowRight"><td><span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span></td><td>Movement</td></tr>
+                  <tr data-keys="Enter"><td><span class="key">⏎ Enter</span></td><td>Action / OK</td></tr>
+                  <tr data-keys="Escape"><td><span class="key">Esc</span></td><td>Emulator options</td></tr>
+                  <tr data-keys="F1,KeyQ"><td><span class="key">F1</span> / <span class="key">Q</span></td><td>Left soft key</td></tr>
+                  <tr data-keys="F2,KeyW"><td><span class="key">F2</span> / <span class="key">W</span></td><td>Right soft key</td></tr>
+                  <tr data-keys="Digit0,Digit1,Digit2,Digit3,Digit4,Digit5,Digit6,Digit7,Digit8,Digit9"><td><span class="key">0</span> – <span class="key">9</span></td><td>Keypad numbers</td></tr>
+                  <tr data-keys="KeyE"><td><span class="key">E</span></td><td>* key</td></tr>
+                  <tr data-keys="KeyR"><td><span class="key">R</span></td><td># key</td></tr>
+                </table>
+              </div>
+            </div>
+
+            <!-- Modern Scheme -->
+            <div class="control-scheme-panel" id="scheme-modern">
+              <div class="scheme-card">
+                <div class="scheme-header">
+                  <div class="scheme-icon">🖱️</div>
+                  <div>
+                    <div class="scheme-name">Modern Controls</div>
+                    <div class="scheme-desc">WASD + Mouse — familiar FPS-style layout</div>
+                  </div>
+                  <div class="connection-badges">
+                    <span class="conn-badge connected"><i class="fas fa-keyboard"></i> Keyboard</span>
+                    <span class="conn-badge connected"><i class="fas fa-mouse"></i> Mouse</span>
+                  </div>
+                </div>
+                <div class="test-hint">
+                  <i class="fas fa-hand-pointer"></i>
+                  Press any key or right-click to test — matching control will light up
+                </div>
+                <table class="scheme-table">
+                  <tr data-keys="KeyW,KeyA,KeyS,KeyD"><td><span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span></td><td>Movement (Up, Left, Down, Right)</td></tr>
+                  <tr data-keys="rightclick"><td><span class="key">Right Click</span></td><td>Action / OK</td></tr>
+                  <tr data-keys="Escape"><td><span class="key">Esc</span></td><td>Emulator options</td></tr>
+                  <tr data-keys="KeyE"><td><span class="key">E</span></td><td>* key</td></tr>
+                  <tr data-keys="KeyR"><td><span class="key">R</span></td><td># key</td></tr>
+                  <tr data-keys="Digit0,Digit1,Digit2,Digit3,Digit4,Digit5,Digit6,Digit7,Digit8,Digit9"><td><span class="key">0</span> – <span class="key">9</span></td><td>Keypad numbers</td></tr>
+                  <tr data-keys="F1"><td><span class="key">F1</span></td><td>Left soft key</td></tr>
+                  <tr data-keys="F2"><td><span class="key">F2</span></td><td>Right soft key</td></tr>
+                </table>
+              </div>
+            </div>
+
+            <!-- Pro Scheme -->
+            <div class="control-scheme-panel" id="scheme-pro">
+              <div class="scheme-card">
+                <div class="scheme-header">
+                  <div class="scheme-icon">🎮</div>
+                  <div>
+                    <div class="scheme-name">Pro Controls <span class="haptic-badge">⚡ Haptic Feedback</span></div>
+                    <div class="scheme-desc">Xbox / USB controller — plug in and play with vibration</div>
+                  </div>
+                  <div class="connection-badges">
+                    <span class="conn-badge disconnected" id="gamepad-conn-badge"><i class="fas fa-gamepad"></i> <span id="gamepad-conn-text">No Controller</span></span>
+                  </div>
+                </div>
+                <div class="controller-notice" id="controller-notice">
+                  <i class="fas fa-info-circle"></i>
+                  Connect a USB/Bluetooth controller and press any button to activate it
+                </div>
+                <div class="test-hint">
+                  <i class="fas fa-hand-pointer"></i>
+                  Press any controller button to test — matching control will light up
+                </div>
+                <table class="scheme-table">
+                  <tr data-buttons="12,13,14,15"><td><span class="key">D-Pad</span></td><td>Movement (Up, Down, Left, Right)</td></tr>
+                  <tr data-buttons="0"><td><span class="key">A</span></td><td>Action / Enter</td></tr>
+                  <tr data-buttons="1"><td><span class="key">B</span></td><td>Back / Right Soft Key</td></tr>
+                  <tr data-buttons="2"><td><span class="key">X</span></td><td>Keypad 5 (Fire / Interact)</td></tr>
+                  <tr data-buttons="3"><td><span class="key">Y</span></td><td>Keypad 0</td></tr>
+                  <tr data-buttons="4,5"><td><span class="key">LB</span> / <span class="key">RB</span></td><td>Left / Right Soft Keys</td></tr>
+                  <tr data-buttons="6,7"><td><span class="key">LT</span> / <span class="key">RT</span></td><td>* and # Keys</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <style>
+            /* ===== LIVE TEST BADGE ===== */
+            .live-test-badge {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              background: rgba(46, 204, 113, 0.1);
+              border: 1px solid rgba(46, 204, 113, 0.25);
+              border-radius: 20px;
+              padding: 5px 14px;
+              font-size: 0.7em;
+              font-weight: 700;
+              color: #2ecc71;
+              letter-spacing: 1.5px;
+            }
+
+            .live-dot {
+              width: 7px;
+              height: 7px;
+              border-radius: 50%;
+              background: #2ecc71;
+              animation: livePulse 1.5s ease-in-out infinite;
+            }
+
+            @keyframes livePulse {
+              0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+              50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(46, 204, 113, 0); }
+            }
+
+            /* ===== CONNECTION BADGES ===== */
+            .connection-badges {
+              display: flex;
+              gap: 6px;
+              margin-left: auto;
+              flex-wrap: wrap;
+              justify-content: flex-end;
+            }
+
+            .conn-badge {
+              display: flex;
+              align-items: center;
+              gap: 5px;
+              padding: 4px 10px;
+              border-radius: 16px;
+              font-size: 0.7em;
+              font-weight: 600;
+              letter-spacing: 0.3px;
+              transition: all 0.3s ease;
+            }
+
+            .conn-badge.connected {
+              background: rgba(46, 204, 113, 0.1);
+              border: 1px solid rgba(46, 204, 113, 0.25);
+              color: #2ecc71;
+            }
+
+            .conn-badge.disconnected {
+              background: rgba(255, 82, 82, 0.1);
+              border: 1px solid rgba(255, 82, 82, 0.2);
+              color: #ff5252;
+            }
+
+            .conn-badge i {
+              font-size: 0.9em;
+            }
+
+            /* ===== TEST HINT ===== */
+            .test-hint {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 8px 14px;
+              margin-bottom: 14px;
+              background: rgba(255, 255, 255, 0.03);
+              border: 1px dashed rgba(255, 255, 255, 0.08);
+              border-radius: var(--radius-xs);
+              font-size: 0.75em;
+              color: var(--text-muted);
+              font-style: italic;
+            }
+
+            .test-hint i {
+              color: var(--accent-red);
+              font-size: 1em;
+            }
+
+            /* ===== ROW HIGHLIGHTING ===== */
+            .scheme-table tr {
+              transition: all 0.15s ease;
+            }
+
+            .scheme-table tr.highlight {
+              background: rgba(255, 0, 0, 0.1) !important;
+              border-color: rgba(255, 0, 0, 0.25) !important;
+            }
+
+            .scheme-table tr.highlight td {
+              color: var(--text-primary) !important;
+            }
+
+            .scheme-table tr.highlight .key {
+              background: rgba(255, 68, 68, 0.15);
+              border-color: rgba(255, 68, 68, 0.4);
+              color: #ff4444;
+              box-shadow: 0 0 8px rgba(255, 68, 68, 0.15);
+              transform: scale(1.05);
+              transition: all 0.1s ease;
+            }
+
+            /* ===== CONTROL TABS ===== */
+            .control-tabs {
+              display: flex;
+              gap: 6px;
+              margin-bottom: 18px;
+              background: rgba(255,255,255,0.03);
+              border-radius: var(--radius-sm);
+              padding: 4px;
+            }
+
+            .control-tab {
+              flex: 1;
+              padding: 10px 14px;
+              background: transparent;
+              border: 1px solid transparent;
+              border-radius: var(--radius-xs);
+              color: var(--text-muted);
+              font-family: var(--font);
+              font-size: 0.82em;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all var(--transition);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+            }
+
+            .control-tab:hover {
+              color: var(--text-primary);
+              background: rgba(255,255,255,0.05);
+            }
+
+            .control-tab.active {
+              background: rgba(255, 0, 0, 0.12);
+              border-color: rgba(255, 0, 0, 0.25);
+              color: #ff4444;
+            }
+
+            .control-tab i {
+              font-size: 0.95em;
+            }
+
+            /* ===== SCHEME PANELS ===== */
+            .control-scheme-panel {
+              display: none;
+              animation: fadeIn 0.3s ease;
+            }
+
+            .control-scheme-panel.active {
+              display: block;
+            }
+
+            @keyframes fadeIn {
+              from { opacity: 0; transform: translateY(6px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+
+            /* ===== SCHEME CARD ===== */
+            .scheme-card {
+              background: rgba(255,255,255,0.03);
+              border: 1px solid var(--glass-border);
+              border-radius: var(--radius);
+              padding: 18px;
+            }
+
+            .scheme-header {
+              display: flex;
+              align-items: center;
+              gap: 14px;
+              margin-bottom: 16px;
+              padding-bottom: 14px;
+              border-bottom: 1px solid var(--glass-border);
+              flex-wrap: wrap;
+            }
+
+            .scheme-icon {
+              font-size: 2em;
+              width: 50px;
+              height: 50px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: rgba(255,255,255,0.04);
+              border-radius: var(--radius-sm);
+            }
+
+            .scheme-name {
+              font-weight: 700;
+              font-size: 1.05em;
+              margin-bottom: 2px;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            }
+
+            .scheme-desc {
+              font-size: 0.78em;
+              color: var(--text-muted);
+            }
+
+            .haptic-badge {
+              font-size: 0.7em;
+              font-weight: 600;
+              background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 140, 0, 0.15));
+              border: 1px solid rgba(255, 215, 0, 0.25);
+              border-radius: 20px;
+              padding: 3px 10px;
+              color: #ffd740;
+            }
+
+            .controller-notice {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 10px 14px;
+              background: rgba(0, 229, 255, 0.06);
+              border: 1px solid rgba(0, 229, 255, 0.12);
+              border-radius: var(--radius-xs);
+              margin-bottom: 14px;
+              font-size: 0.8em;
+              color: var(--accent-cyan);
+            }
+
+            /* ===== SCHEME TABLE ===== */
+            .scheme-table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+
+            .scheme-table tr {
+              border-bottom: 1px solid var(--glass-border);
+            }
+
+            .scheme-table tr:last-child {
+              border-bottom: none;
+            }
+
+            .scheme-table td {
+              padding: 9px 6px;
+              font-size: 0.85em;
+              color: var(--text-secondary);
+              vertical-align: middle;
+            }
+
+            .scheme-table td:first-child {
+              white-space: nowrap;
+              padding-right: 20px;
+            }
+
+            .scheme-table .key {
+              display: inline-block;
+              background: rgba(255,255,255,0.06);
+              border: 1px solid var(--glass-border);
+              border-radius: 4px;
+              padding: 2px 8px;
+              font-family: var(--font);
+              font-size: 0.88em;
+              font-weight: 600;
+              color: #ff4444;
+              min-width: 24px;
+              text-align: center;
+              line-height: 1.5;
+              transition: all 0.1s ease;
+            }
+          </style>
+
+          <!-- Control scheme tab switcher + live input tester script -->
+          <script>
+            document.addEventListener('DOMContentLoaded', () => {
+              const tabs = document.querySelectorAll('.control-tab');
+              const panels = document.querySelectorAll('.control-scheme-panel');
+
+              // Load saved scheme
+              const saved = localStorage.getItem('roylays_control_scheme') || 'classical';
+              setActiveScheme(saved);
+
+              tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                  const scheme = tab.dataset.scheme;
+                  setActiveScheme(scheme);
+                  localStorage.setItem('roylays_control_scheme', scheme);
+                });
+              });
+
+              function setActiveScheme(scheme) {
+                tabs.forEach(t => t.classList.toggle('active', t.dataset.scheme === scheme));
+                panels.forEach(p => p.classList.toggle('active', p.id === 'scheme-' + scheme));
+              }
+
+              // ================================================
+              // LIVE INPUT TESTER — Keyboard & Mouse
+              // ================================================
+              const highlightTimers = new Map();
+
+              function highlightRow(row, duration = 300) {
+                row.classList.add('highlight');
+
+                // Clear previous timer for this row
+                if (highlightTimers.has(row)) {
+                  clearTimeout(highlightTimers.get(row));
+                }
+
+                const timer = setTimeout(() => {
+                  row.classList.remove('highlight');
+                  highlightTimers.delete(row);
+                }, duration);
+
+                highlightTimers.set(row, timer);
+              }
+
+              function highlightKeyDown(row) {
+                row.classList.add('highlight');
+              }
+
+              function highlightKeyUp(row) {
+                // Brief flash before removing
+                setTimeout(() => {
+                  row.classList.remove('highlight');
+                }, 100);
+              }
+
+              // Find rows matching a keyboard code in ALL visible scheme panels
+              function findRowsForKey(keyCode) {
+                const activePanel = document.querySelector('.control-scheme-panel.active');
+                if (!activePanel) return [];
+
+                const rows = activePanel.querySelectorAll('tr[data-keys]');
+                const matched = [];
+
+                rows.forEach(row => {
+                  const keys = row.dataset.keys.split(',');
+                  if (keys.includes(keyCode)) {
+                    matched.push(row);
+                  }
+                });
+
+                return matched;
+              }
+
+              // Find rows matching a gamepad button index
+              function findRowsForButton(buttonIdx) {
+                const activePanel = document.querySelector('.control-scheme-panel.active');
+                if (!activePanel) return [];
+
+                const rows = activePanel.querySelectorAll('tr[data-buttons]');
+                const matched = [];
+
+                rows.forEach(row => {
+                  const buttons = row.dataset.buttons.split(',');
+                  if (buttons.includes(String(buttonIdx))) {
+                    matched.push(row);
+                  }
+                });
+
+                return matched;
+              }
+
+              // Keyboard events for live testing
+              document.addEventListener('keydown', (e) => {
+                const rows = findRowsForKey(e.code);
+                rows.forEach(row => highlightKeyDown(row));
+              });
+
+              document.addEventListener('keyup', (e) => {
+                const rows = findRowsForKey(e.code);
+                rows.forEach(row => highlightKeyUp(row));
+              });
+
+              // Right-click for Modern scheme testing
+              document.addEventListener('contextmenu', (e) => {
+                const activePanel = document.querySelector('.control-scheme-panel.active');
+                if (activePanel && activePanel.id === 'scheme-modern') {
+                  e.preventDefault();
+                  const rows = findRowsForKey('rightclick');
+                  rows.forEach(row => highlightRow(row, 400));
+                }
+              });
+
+              // ================================================
+              // LIVE INPUT TESTER — Gamepad
+              // ================================================
+              let gamepadPollId = null;
+              let prevButtonStates = {};
+
+              function getGamepad() {
+                const gps = navigator.getGamepads();
+                for (let i = 0; i < gps.length; i++) {
+                  if (gps[i]) return gps[i];
+                }
+                return null;
+              }
+
+              function updateGamepadBadge(connected, name) {
+                const badge = document.getElementById('gamepad-conn-badge');
+                const text = document.getElementById('gamepad-conn-text');
+                const notice = document.getElementById('controller-notice');
+
+                if (connected) {
+                  badge.classList.remove('disconnected');
+                  badge.classList.add('connected');
+                  text.textContent = name || 'Controller';
+                  if (notice) notice.style.display = 'none';
+                } else {
+                  badge.classList.remove('connected');
+                  badge.classList.add('disconnected');
+                  text.textContent = 'No Controller';
+                  if (notice) notice.style.display = '';
+                }
+              }
+
+              window.addEventListener('gamepadconnected', (e) => {
+                const shortName = e.gamepad.id.split('(')[0].trim() || 'Controller';
+                updateGamepadBadge(true, shortName);
+              });
+
+              window.addEventListener('gamepaddisconnected', (e) => {
+                updateGamepadBadge(false);
+              });
+
+              // Poll gamepad for live testing highlight
+              function pollGamepadForTest() {
+                const gp = getGamepad();
+                if (gp) {
+                  for (let i = 0; i < gp.buttons.length; i++) {
+                    const pressed = gp.buttons[i].pressed;
+                    const wasPrev = prevButtonStates[i] || false;
+
+                    if (pressed && !wasPrev) {
+                      const rows = findRowsForButton(i);
+                      rows.forEach(row => highlightKeyDown(row));
+                    } else if (!pressed && wasPrev) {
+                      const rows = findRowsForButton(i);
+                      rows.forEach(row => highlightKeyUp(row));
+                    }
+
+                    prevButtonStates[i] = pressed;
+                  }
+
+                  // Update badge if first time detecting
+                  const badge = document.getElementById('gamepad-conn-badge');
+                  if (badge && badge.classList.contains('disconnected')) {
+                    const shortName = gp.id.split('(')[0].trim() || 'Controller';
+                    updateGamepadBadge(true, shortName);
+                  }
+                }
+
+                gamepadPollId = requestAnimationFrame(pollGamepadForTest);
+              }
+
+              // Start gamepad polling for the live tester
+              pollGamepadForTest();
+
+              // Check if gamepad already connected at load
+              const existingGp = getGamepad();
+              if (existingGp) {
+                const shortName = existingGp.id.split('(')[0].trim() || 'Controller';
+                updateGamepadBadge(true, shortName);
+              }
+            });
+          </script>
+
+        </div><!-- /content-area -->
+      </div><!-- /main-area -->
+    </div><!-- /app-layout -->
+
+    <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>
+    <script type="module" src="src/launcher.js"></script>
+  </body>
+</html>
