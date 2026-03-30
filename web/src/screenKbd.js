@@ -87,13 +87,28 @@ function handleTouchEnd(e) {
 }
 
 export function initKbdListeners() {
-    // Add touch event listeners to keypad areas
+    // Add touch event listeners to ALL keypad areas (landscape panels + portrait keypad)
     const keypads = document.querySelectorAll('.keypad-part');
     keypads.forEach(keypad => {
         keypad.addEventListener('touchstart', handleTouchStart, { passive: false });
         keypad.addEventListener('touchmove', handleTouchMove, { passive: false });
         keypad.addEventListener('touchend', handleTouchEnd, { passive: false });
         keypad.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+    });
+
+    // Also support mouse clicks on all .key buttons (for desktop portrait-mode simulation / dev tools)
+    document.querySelectorAll('.keypad-part .key').forEach(key => {
+        key.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            activateKey(key);
+        });
+        key.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            deactivateKey(key);
+        });
+        key.addEventListener('mouseleave', (e) => {
+            deactivateKey(key);
+        });
     });
 }
 

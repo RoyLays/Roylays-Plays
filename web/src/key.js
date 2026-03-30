@@ -29,6 +29,7 @@ export const codeMap = {
     'Numpad9': 105,
     'NumpadDivide': 111,
     'NumpadMultiply': 106,
+    'NumpadAsterisk': 106,  // alias — same keycode as NumpadMultiply
     'F1': 112,
     'F2': 113,
     'F3': 114,
@@ -63,9 +64,9 @@ export const codeMap = {
 
 /**
  * Modern control scheme code map.
- * WASD → directional movement, E → *, R → # (same as classical),
- * Arrow keys still work as fallback. Removes Q/W soft key shortcuts
- * since W is now Up and Q is unused.
+ * WASD → movement, Q/E → left/right soft keys,
+ * X → *, C → #.
+ * Arrow keys still work as fallback.
  */
 const modernCodeMap = {
     ...codeMap,
@@ -74,6 +75,11 @@ const modernCodeMap = {
     'KeyA': 37,  // Left
     'KeyS': 40,  // Down
     'KeyD': 39,  // Right
+    // Modern remaps
+    'KeyQ': 112, // F1 (Left Soft Key)
+    'KeyE': 113, // F2 (Right Soft Key)
+    'KeyX': 106, // * (NumpadMultiply)
+    'KeyC': 111, // # (NumpadDivide)
 };
 
 /**

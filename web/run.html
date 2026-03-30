@@ -47,7 +47,7 @@
         position: fixed;
         top: 12px;
         left: 14px;
-        z-index: 50;
+        z-index: 250; /* Higher than sidebar */
         display: flex;
         align-items: center;
         gap: 8px;
@@ -57,7 +57,15 @@
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 10px;
         padding: 6px 14px 6px 8px;
-        transition: opacity 0.4s ease;
+        transition: opacity 0.4s ease, border-color var(--transition), background 0.2s ease;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    .brand-overlay:hover {
+        border-color: rgba(255, 255, 255, 0.18);
+        background: rgba(45, 45, 45, 0.85);
     }
 
     .brand-overlay img {
@@ -103,7 +111,7 @@
     /* Controller status */
     .controller-status {
         position: fixed;
-        top: 12px;
+        top: 52px;
         right: 14px;
         z-index: 50;
         display: none;
@@ -118,6 +126,33 @@
         font-size: 0.75em;
         font-weight: 600;
         color: #2ecc71;
+    }
+
+    .fullscreen-btn {
+        position: fixed;
+        top: 12px;
+        right: 14px;
+        z-index: 55;
+        background: rgba(33, 33, 33, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: var(--text-primary);
+        border-radius: 10px;
+        width: 40px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.05em;
+        line-height: 1;
+        transition: all var(--transition);
+    }
+
+    .fullscreen-btn:hover {
+        border-color: rgba(255, 0, 0, 0.5);
+        background: rgba(255, 0, 0, 0.12);
     }
 
     .controller-status::before {
@@ -159,6 +194,194 @@
     #display:focus {
         outline: none;
     }
+
+    /* ===== ARCADE CABINET FRAME (fullscreen only) ===== */
+    .arcade-frame {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        pointer-events: none;
+        /* Arcade frame layout: left panel | center bezel | right panel */
+    }
+
+    .arcade-frame.active {
+        display: flex;
+        align-items: stretch;
+    }
+
+    /* Side panels with artwork */
+    .arcade-side {
+        flex: 0 0 auto;
+        width: clamp(80px, 12vw, 180px);
+        position: relative;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .arcade-side-left {
+        background: linear-gradient(to right, #0a0a0a 0%, #111 100%);
+        border-right: 3px solid;
+        border-image: linear-gradient(to bottom, #888, #ccc, #888, #555, #888) 1;
+    }
+
+    .arcade-side-right {
+        background: linear-gradient(to left, #0a0a0a 0%, #111 100%);
+        border-left: 3px solid;
+        border-image: linear-gradient(to bottom, #888, #ccc, #888, #555, #888) 1;
+    }
+
+    .arcade-side img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        opacity: 0.92;
+        display: block;
+    }
+
+    /* Chrome inner edge highlight on side panels */
+    .arcade-side-left::after {
+        content: '';
+        position: absolute;
+        top: 0; right: 0; bottom: 0;
+        width: 6px;
+        background: linear-gradient(to right, transparent, rgba(200,200,200,0.18), rgba(200,200,200,0.06));
+        pointer-events: none;
+    }
+
+    .arcade-side-right::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; bottom: 0;
+        width: 6px;
+        background: linear-gradient(to left, transparent, rgba(200,200,200,0.18), rgba(200,200,200,0.06));
+        pointer-events: none;
+    }
+
+    /* Center column: top bezel + screen hole + bottom bezel */
+    .arcade-center {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        pointer-events: none;
+    }
+
+    .arcade-bezel-top {
+        flex: 0 0 auto;
+        height: clamp(30px, 5vh, 70px);
+        background: linear-gradient(to bottom, #0d0d0d 0%, #181818 60%, #0f0f0f 100%);
+        border-bottom: 2px solid;
+        border-image: linear-gradient(to right, #444, #999, #ccc, #999, #444) 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Roylays logo text in top bezel */
+    .arcade-bezel-top::after {
+        content: 'ROYLAYS PLAYS';
+        font-family: 'Montserrat', sans-serif;
+        font-size: clamp(8px, 1.1vw, 14px);
+        font-weight: 800;
+        letter-spacing: 4px;
+        color: transparent;
+        background: linear-gradient(90deg, #ff0040, #ff6600, #ffcc00, #ff6600, #ff0040);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: arcadeTextShine 3s linear infinite;
+        text-shadow: none;
+        filter: drop-shadow(0 0 6px rgba(255,80,0,0.5));
+    }
+
+    @keyframes arcadeTextShine {
+        0% { background-position: 0% center; }
+        100% { background-position: 200% center; }
+    }
+
+    /* The transparent screen hole — lets the game show through */
+    .arcade-screen-hole {
+        flex: 1;
+        position: relative;
+        /* transparent — game canvas shows through */
+        box-shadow:
+            inset 0 0 0 2px rgba(0,0,0,0.8),
+            inset 0 0 30px rgba(0,0,0,0.5);
+    }
+
+    /* Subtle scan-line overlay on screen area */
+    .arcade-screen-hole::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 2px,
+            rgba(0, 0, 0, 0.06) 2px,
+            rgba(0, 0, 0, 0.06) 4px
+        );
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    /* CRT vignette glow */
+    .arcade-screen-hole::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+            ellipse at center,
+            transparent 60%,
+            rgba(0, 0, 0, 0.55) 100%
+        );
+        pointer-events: none;
+        z-index: 3;
+    }
+
+    .arcade-bezel-bottom {
+        flex: 0 0 auto;
+        height: clamp(24px, 4vh, 60px);
+        background: linear-gradient(to top, #0d0d0d 0%, #181818 60%, #0f0f0f 100%);
+        border-top: 2px solid;
+        border-image: linear-gradient(to right, #444, #999, #ccc, #999, #444) 1;
+        position: relative;
+    }
+
+    /* Bottom joystick/button decorative divot */
+    .arcade-bezel-bottom::after {
+        content: '';
+        position: absolute;
+        bottom: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 28px;
+        height: 10px;
+        border-radius: 50%;
+        background: radial-gradient(ellipse at center, #333 0%, #111 100%);
+        border: 1px solid #444;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+
+    /* Corner rivets on side panels */
+    .arcade-side-left::before,
+    .arcade-side-right::before {
+        content: '';
+        position: absolute;
+        top: 10px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #ccc, #555);
+        border: 1px solid #333;
+        z-index: 5;
+    }
+
+    .arcade-side-left::before { right: 8px; }
+    .arcade-side-right::before { left: 8px; }
 
     #loading {
         font-size: 1.1em;
@@ -236,7 +459,7 @@
         50% { opacity: 1; }
     }
 
-    /* ===== ON-SCREEN KEYPAD ===== */
+    /* ===== ON-SCREEN KEYPAD — SHARED ===== */
     .keypad-part {
         background: linear-gradient(180deg, #252525 0%, #1a1a1a 100%);
         border-top: 1px solid var(--surface-border);
@@ -281,9 +504,10 @@
         justify-content: center;
         text-align: center;
         user-select: none;
-        transition: all var(--transition);
+        transition: background var(--transition), border-color var(--transition), transform var(--transition), box-shadow var(--transition);
         line-height: 1.1;
         -webkit-tap-highlight-color: transparent;
+        touch-action: none;
     }
 
     .key span {
@@ -299,7 +523,7 @@
         border-color: var(--accent-red);
         color: var(--accent-red);
         box-shadow: 0 0 16px rgba(255, 0, 0, 0.15);
-        transform: scale(0.95);
+        transform: scale(0.93);
     }
 
     .key.active span {
@@ -314,6 +538,12 @@
         font-size: 1.2em;
         color: var(--accent-red);
         border-color: rgba(255, 0, 0, 0.15);
+    }
+
+    .soft-key {
+        font-size: 0.72em;
+        color: var(--text-secondary);
+        letter-spacing: 0.5px;
     }
 
     .small-key {
@@ -335,6 +565,7 @@
         justify-self: right;
     }
 
+    /* ===== LANDSCAPE SPLIT PANELS ===== */
     #left-keys,
     #right-keys {
         display: none;
@@ -352,21 +583,9 @@
         border-left: 1px solid var(--surface-border);
     }
 
-    body.kbd-portrait #left-keys,
-    body.kbd-portrait #right-keys,
     body.kbd-landscape #left-keys,
     body.kbd-landscape #right-keys {
         display: flex;
-    }
-
-    body.kbd-portrait #left-keys,
-    body.kbd-portrait #right-keys {
-        width: 50%;
-        height: 220px;
-    }
-
-    body.kbd-landscape #left-keys,
-    body.kbd-landscape #right-keys {
         width: 220px;
         height: 100%;
     }
@@ -376,27 +595,432 @@
         max-height: 400px;
     }
 
-    body.kbd-portrait #screen-area {
-        bottom: 220px;
-    }
-
     body.kbd-landscape #screen-area {
         left: 220px;
         right: 220px;
     }
+
+    /* ===== PORTRAIT UNIFIED KEYPAD — Nokia-style ===== */
+    #portrait-keypad {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 60;
+        /* Deep charcoal, like Nokia body */
+        background: linear-gradient(180deg, #1c1c1c 0%, #111111 100%);
+        border-top: 2px solid rgba(255,255,255,0.07);
+        box-shadow: 0 -6px 32px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.05);
+        padding: 5px 7px calc(env(safe-area-inset-bottom, 0px) + 6px);
+        box-sizing: border-box;
+        flex-direction: column;
+        gap: 4px;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: none;
+    }
+
+    /* Thin separator between keypad sections */
+    .portrait-keypad-sep {
+        height: 1px;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+        flex-shrink: 0;
+        margin: 1px 8px;
+    }
+
+    /* === Navigation Row (5-col) === */
+    .portrait-nav-row {
+        display: grid;
+        gap: 4px;
+        flex-shrink: 0;
+        flex: 0 0 auto;
+    }
+
+    /* Top nav: L-SOFT | ↑ | OK (large) | ↓ | R-SOFT */
+    .portrait-nav-row.top-nav {
+        grid-template-columns: 1fr 1fr 1.3fr 1fr 1fr;
+        height: 42px;
+    }
+
+    /* Bottom nav: CALL | ← | BACK | → | MAXIMIZE */
+    .portrait-nav-row.bot-nav {
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+        height: 36px;
+    }
+
+    /* === Number Grid — fills remaining space === */
+    .portrait-num-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: 4px;
+        flex: 1 1 0;
+        min-height: 140px;
+    }
+
+    /* Show portrait keypad in portrait orientation */
+    @media (orientation: portrait) {
+        #portrait-keypad {
+            display: flex;
+            /* Ensure consistent height across all portrait phones */
+            height: min(52vmax, 310px);
+        }
+
+        /* Push screen-area up to not overlap — same value as keypad height above */
+        #screen-area {
+            bottom: min(52vmax, 310px);
+        }
+
+        /* Hide landscape panels in portrait */
+        #left-keys,
+        #right-keys {
+            display: none !important;
+        }
+    }
+
+    /* Compact sizing for short/small screens (e.g. iPhone SE) */
+    @media (orientation: portrait) and (max-height: 700px) {
+        #portrait-keypad {
+            padding: 3px 5px 4px;
+            gap: 2px;
+            height: min(56vmax, 270px);
+        }
+        #screen-area { bottom: min(56vmax, 270px); }
+        .portrait-nav-row.top-nav { height: 32px; }
+        .portrait-nav-row.bot-nav { height: 26px; }
+        .portrait-num-grid { gap: 2px; min-height: 110px; }
+        .portrait-keypad-sep { margin: 0 6px; }
+        #portrait-keypad .key { font-size: 1em; }
+        #portrait-keypad .portrait-num-grid .key { font-size: 1.1em; }
+    }
+    #portrait-keypad .key {
+        /* Nokia sculpted key look */
+        background: linear-gradient(170deg, #2e2e2e 0%, #1a1a1a 55%, #141414 100%);
+        border: 1px solid #3a3a3a;
+        border-bottom: 2px solid #0a0a0a;
+        border-radius: 8px;
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.09),
+            inset 0 -1px 0 rgba(0,0,0,0.5),
+            0 2px 4px rgba(0,0,0,0.6);
+        color: #f0f0f0;
+        font-family: var(--font-body);
+        font-size: 1.25em;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        user-select: none;
+        transition: background 0.08s ease, transform 0.08s ease, box-shadow 0.08s ease;
+        line-height: 1;
+        min-height: 0;
+        padding: 2px 2px;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: none;
+    }
+
+    /* ABC / DEF sub-labels */
+    #portrait-keypad .key span {
+        font-size: 0.33em;
+        font-weight: 500;
+        margin-top: 1px;
+        color: rgba(200,200,200,0.55);
+        letter-spacing: 1px;
+        line-height: 1;
+    }
+
+    /* Pressed state */
+    #portrait-keypad .key.active {
+        background: linear-gradient(170deg, #3a1010 0%, #220808 100%);
+        border-color: var(--accent-red);
+        border-bottom-color: #550000;
+        color: #ff5555;
+        box-shadow:
+            inset 0 1px 0 rgba(255,60,60,0.12),
+            0 1px 2px rgba(0,0,0,0.8);
+        transform: translateY(1px);
+    }
+
+    #portrait-keypad .key.active span {
+        color: rgba(255, 80, 80, 0.5);
+    }
+
+    /* ===== NAV CLUSTER SPECIAL STYLES ===== */
+
+    /* OK button — prominent, red-accent */
+    #portrait-keypad .key[data-key="Enter"] {
+        background: linear-gradient(160deg, #3d1212 0%, #220808 100%);
+        border-color: rgba(255, 0, 0, 0.35);
+        border-bottom-color: #330000;
+        color: var(--accent-red);
+        font-size: 0.9em;
+        font-weight: 800;
+        letter-spacing: 1px;
+        box-shadow:
+            inset 0 1px 0 rgba(255,80,80,0.15),
+            0 0 10px rgba(200,0,0,0.2),
+            0 2px 4px rgba(0,0,0,0.7);
+    }
+
+    /* Arrow keys — slightly lighter, no sub-label */
+    #portrait-keypad .key[data-key^="Arrow"] {
+        font-size: 1.5em;
+        background: linear-gradient(170deg, #303030 0%, #1e1e1e 100%);
+    }
+
+    /* L-SOFT / R-SOFT */
+    #portrait-keypad .key[data-key="F1"],
+    #portrait-keypad .key[data-key="F2"] {
+        background: linear-gradient(170deg, #1a2a2e 0%, #0d1a1e 100%);
+        border-color: rgba(0,229,255,0.2);
+        border-bottom-color: #051015;
+        color: rgba(0, 210, 240, 0.9);
+        font-size: 0.62em;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        box-shadow:
+            inset 0 1px 0 rgba(0,229,255,0.08),
+            0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    /* CALL button — green Nokia phone */
+    #portrait-keypad .key[data-key="F3"] {
+        background: linear-gradient(160deg, #0d2e14 0%, #071a0b 100%);
+        border-color: rgba(46,204,113,0.35);
+        border-bottom-color: #041008;
+        color: #3ddc84;
+        font-size: 1.3em;
+        box-shadow:
+            inset 0 1px 0 rgba(60,220,100,0.12),
+            0 0 8px rgba(40,180,80,0.15),
+            0 2px 4px rgba(0,0,0,0.7);
+    }
+
+    /* BACK/ESC — red Nokia end-call style */
+    #portrait-keypad .key[data-key="Escape"] {
+        background: linear-gradient(160deg, #2e0d0d 0%, #1a0707 100%);
+        border-color: rgba(255,50,50,0.35);
+        border-bottom-color: #1a0000;
+        color: #ff4444;
+        font-size: 1.3em;
+        box-shadow:
+            inset 0 1px 0 rgba(255,80,80,0.12),
+            0 0 8px rgba(180,40,40,0.15),
+            0 2px 4px rgba(0,0,0,0.7);
+    }
+
+    /* MAXIMIZE button */
+    #portrait-keypad .key[data-key="Maximize"] {
+        font-size: 1em;
+        color: rgba(200,200,200,0.7);
+    }
+
+    /* ===== NUMBER KEY SPECIAL — big bold digits ===== */
+    #portrait-keypad .portrait-num-grid .key {
+        font-size: 1.35em;
+        border-radius: 7px;
+    }
+
+    /* Wider pill row feel for each number row via slightly taller keys */
+    #portrait-keypad .portrait-num-grid .key:nth-child(n) {
+        border-radius: 8px;
+    }
+
+
+
+    /* ===== SIDEBAR (hidden by default) ===== */
+    .sidebar {
+        display: none;
+        width: 240px;
+        height: 100vh;
+        flex-direction: column;
+        z-index: 200;
+        position: fixed;
+        left: 0;
+        top: 0;
+        pointer-events: none; /* Let clicks pass through to game except for music player */
+    }
+
+    .sidebar.visible {
+        display: flex;
+    }
+
+    /* Reuse music styles from launcher */
+    .sidebar-music-player {
+        margin: auto 14px 20px;
+        padding: 16px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        width: 212px; /* Fixed width to prevent distortion */
+        height: 180px; /* Fixed height to maintain squareness */
+        pointer-events: auto; /* Enable clicks for music controls */
+        --music-bg: url('assets/music_bg.jpg');
+    }
+
+    .sidebar-music-player::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--music-bg) center/cover no-repeat !important;
+        filter: blur(5px);
+        opacity: 0.8;
+        z-index: -1;
+        pointer-events: none;
+        transition: background 0.5s ease;
+    }
+
+    .music-progress-container {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 20;
+        width: 100%;
+        height: 100%;
+    }
+
+    .music-progress-path {
+        fill: none;
+        stroke: #ff0000;
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        transition: stroke-dashoffset 0.1s linear;
+        filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.5));
+    }
+
+    .music-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+    }
+
+    .music-cover {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: url('assets/logo.png') center/cover no-repeat;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .music-cast-icon {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.2em;
+    }
+
+    .music-info {
+        margin-top: 4px;
+    }
+
+    .music-title {
+        font-size: 0.95em;
+        font-weight: 700;
+        color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .music-artist {
+        font-size: 0.8em;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 2px;
+    }
+
+    .music-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 24px;
+        margin-top: 8px;
+    }
+
+    .music-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 1.1em;
+        opacity: 0.4;
+        transition: all 0.2s ease;
+    }
+
+    .music-btn:hover {
+        opacity: 0.8;
+    }
+
+    .music-btn.play-pause {
+        opacity: 1;
+        font-size: 1.5em;
+    }
 </style>
 <body>
-    <!-- Branding Overlay -->
-    <div class="brand-overlay">
-        <img src="assets/logo.png" alt="RoyLays" />
+    <!-- Branding: tap to return to launcher home -->
+    <a href="./" class="brand-overlay" title="Back to home" aria-label="Back to home">
+        <img src="assets/logo.png" alt="" />
         <span class="brand-name">RoyLays</span>
-    </div>
+    </a>
 
     <!-- Scheme Indicator Badge -->
     <div class="scheme-indicator" id="scheme-indicator">🎹 Classical</div>
 
+    <!-- Fullscreen Toggle -->
+    <button class="fullscreen-btn" id="fullscreen-btn" title="Enter fullscreen" aria-label="Enter fullscreen">⛶</button>
+
     <!-- Controller Status Indicator -->
     <div class="controller-status" id="controller-status">🎮 Controller Connected</div>
+
+    <!-- Music Sidebar for Games -->
+    <nav class="sidebar" id="music-sidebar">
+        <div class="sidebar-music-player">
+            <svg class="music-progress-container">
+                <path class="music-progress-path" d="M0,0"></path>
+            </svg>
+            <div class="music-top">
+                <div class="music-cover" id="music-cover"></div>
+                <div class="music-cast-icon">
+                    <i class="fas fa-rss"></i>
+                </div>
+            </div>
+            <div class="music-info">
+                <div class="music-title" id="music-title">Loading...</div>
+                <div class="music-artist">Loading...</div>
+            </div>
+            <div class="music-controls">
+                <button class="music-btn" id="music-prev"><i class="fas fa-step-backward"></i></button>
+                <button class="music-btn play-pause" id="music-play-pause"><i class="fas fa-play"></i></button>
+                <button class="music-btn" id="music-next"><i class="fas fa-step-forward"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Arcade Cabinet Frame (shown in fullscreen) -->
+    <div class="arcade-frame" id="arcade-frame">
+        <div class="arcade-side arcade-side-left">
+            <img src="assets/arcade_left.png" alt="" draggable="false" />
+        </div>
+        <div class="arcade-center">
+            <div class="arcade-bezel-top"></div>
+            <div class="arcade-screen-hole"></div>
+            <div class="arcade-bezel-bottom"></div>
+        </div>
+        <div class="arcade-side arcade-side-right">
+            <img src="assets/arcade_right.png" alt="" draggable="false" />
+        </div>
+    </div>
 
     <div id="screen-area">
         <canvas tabindex="0" id="display" style="display: none;"></canvas>
@@ -410,6 +1034,7 @@
             <div class="loading-subtext" id="loading-status">Initializing...</div>
         </div>
     </div>
+    <!-- Landscape split panels (hidden in portrait via CSS) -->
     <div id="left-keys" class="keypad-part">
         <div class="key-grid left-grid">
             <button data-key="Digit1" class="key">1</button>
@@ -437,6 +1062,48 @@
             <button data-key="Escape" class="key small-key small-key-left">Esc</button>
             <button data-key="ArrowDown" class="key arrow-key" aria-label="Down">↓</button>
             <button data-key="Maximize" class="key small-key small-key-right" aria-label="Maximize">⛶</button>
+        </div>
+    </div>
+
+    <!-- ===== PORTRAIT BOTTOM KEYPAD ===== -->
+    <!-- Shown automatically on portrait/vertical screens via CSS media query -->
+    <div id="portrait-keypad" class="keypad-part" aria-label="Mobile Keypad">
+
+        <!-- Top nav: L-SOFT | ↑ | OK (center, larger) | ↓ | R-SOFT -->
+        <div class="portrait-nav-row top-nav">
+            <button data-key="F1" class="key" aria-label="Soft Left">L<span>SOFT</span></button>
+            <button data-key="ArrowUp" class="key" aria-label="Up">↑</button>
+            <button data-key="Enter" class="key" aria-label="OK">OK</button>
+            <button data-key="ArrowDown" class="key" aria-label="Down">↓</button>
+            <button data-key="F2" class="key" aria-label="Soft Right">R<span>SOFT</span></button>
+        </div>
+
+        <!-- Bottom nav: CALL | ← | BACK/ESC | → | MAXIMIZE -->
+        <div class="portrait-nav-row bot-nav">
+            <button data-key="F3" class="key" aria-label="Call">📞</button>
+            <button data-key="ArrowLeft" class="key" aria-label="Left">←</button>
+            <button data-key="Escape" class="key" aria-label="Back">⌫</button>
+            <button data-key="ArrowRight" class="key" aria-label="Right">→</button>
+            <button data-key="Maximize" class="key" aria-label="Scale">⛶</button>
+        </div>
+
+        <!-- Thin divider between nav and numpad -->
+        <div class="portrait-keypad-sep"></div>
+
+        <!-- Numpad 1–9, *, 0, # -->
+        <div class="portrait-num-grid">
+            <button data-key="Digit1" class="key">1</button>
+            <button data-key="Digit2" class="key">2<span>ABC</span></button>
+            <button data-key="Digit3" class="key">3<span>DEF</span></button>
+            <button data-key="Digit4" class="key">4<span>GHI</span></button>
+            <button data-key="Digit5" class="key">5<span>JKL</span></button>
+            <button data-key="Digit6" class="key">6<span>MNO</span></button>
+            <button data-key="Digit7" class="key">7<span>PQRS</span></button>
+            <button data-key="Digit8" class="key">8<span>TUV</span></button>
+            <button data-key="Digit9" class="key">9<span>WXYZ</span></button>
+            <button data-key="NumpadAsterisk" class="key">*</button>
+            <button data-key="Digit0" class="key">0<span>+</span></button>
+            <button data-key="NumpadDivide" class="key">#</button>
         </div>
     </div>
     <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>

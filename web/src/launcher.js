@@ -1,7 +1,10 @@
 // note that we can only call java stuff if thread not running..
+import { requestPersistentStorage } from "./saveBackup.js";
+
 const cheerpjWebRoot = '/app'+location.pathname.replace(/\/$/,'');
 
 const emptyIcon = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+const ACCESS_PIN = "123Roy45";
 
 let lib = null, launcherUtil = null;
 let state = {
@@ -11,12 +14,303 @@ let state = {
     uploadedJars: 0,
 };
 let defaultSettings = {};
+let activeTab = 'all'; // 'all' or 'favorites'
+
+function requestPin() {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('pin-modal');
+        const input = document.getElementById('pin-input');
+        const confirmBtn = document.getElementById('pin-confirm-btn');
+        const cancelBtn = document.getElementById('pin-cancel-btn');
+        const errorMsg = document.getElementById('pin-error-msg');
+
+        input.value = '';
+        errorMsg.classList.remove('visible');
+        modal.classList.add('active');
+        input.focus();
+
+        const cleanup = () => {
+            modal.classList.remove('active');
+            confirmBtn.onclick = null;
+            cancelBtn.onclick = null;
+            input.onkeydown = null;
+        };
+
+        const handleConfirm = () => {
+            if (input.value === ACCESS_PIN) {
+                cleanup();
+                resolve(true);
+            } else {
+                errorMsg.classList.add('visible');
+                input.value = '';
+                input.focus();
+            }
+        };
+
+        confirmBtn.onclick = handleConfirm;
+        cancelBtn.onclick = () => {
+            cleanup();
+            resolve(false);
+        };
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') handleConfirm();
+            if (e.key === 'Escape') {
+                cleanup();
+                resolve(false);
+            }
+        };
+    });
+}
+
+function getAverageColor(imageSrc) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = imageSrc;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            let r = 0, g = 0, b = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                r += data[i];
+                g += data[i+1];
+                b += data[i+2];
+            }
+            const count = data.length / 4;
+            r = Math.floor(r / count);
+            g = Math.floor(g / count);
+            b = Math.floor(b / count);
+            resolve(`rgb(${r}, ${g}, ${b})`);
+        };
+        img.onerror = () => resolve('rgb(255, 0, 0)'); // Fallback to red
+    });
+}
+
+async function setupBackgroundMusic() {
+    const playlist = [
+        {
+            src: 'assets/bg_music.mp3',
+            title: 'Shounen ki',
+            artist: 'negimaavni',
+            bg: 'url("assets/music_bg.jpg")'
+        },
+        {
+            src: 'assets/music_2.mp3',
+            title: 'Sabse Phele Hein Payar',
+            artist: 'eunica.smusic',
+            bg: 'url("assets/music_2_cover.jpg")'
+        },
+        {
+            src: 'assets/music_3.mp3',
+            title: 'नीली चिड़िया',
+            artist: 'WeWake',
+            bg: 'url("assets/music_3_bg.jpg")'
+        },
+        {
+            src: 'assets/music_4.mp3',
+            title: "Bink's Sake",
+            artist: 'Rawmats',
+            bg: 'url("assets/music_4_bg.jpg")'
+        },
+        {
+            src: 'assets/music_5.mp3',
+            title: 'Pokemon Season 1',
+            artist: 'Official',
+            bg: 'url("assets/music_5_bg.jpg")'
+        },
+        {
+            src: 'assets/music_6.mp3',
+            title: 'BestOfLuckNikki',
+            artist: 'Ananya Kolvankar',
+            bg: 'url("assets/music_6_bg.jpg")'
+        }
+    ];
+
+    let currentSongIndex = 0;
+    const audio = new Audio(playlist[currentSongIndex].src);
+    audio.loop = false; // Disable loop to handle playlist progression
+    
+    const playPauseBtn = document.getElementById('music-play-pause');
+    const nextBtn = document.getElementById('music-next');
+    const prevBtn = document.getElementById('music-prev');
+    const musicTitle = document.getElementById('music-title');
+    const musicArtist = document.querySelector('.music-artist');
+    const musicBox = document.querySelector('.sidebar-music-player');
+    const progressPath = document.querySelector('.music-progress-path');
+    let isPlaying = false;
+
+    const loadSong = (index) => {
+        const song = playlist[index];
+        audio.src = song.src;
+        musicTitle.textContent = song.title;
+        musicArtist.textContent = song.artist;
+        musicBox.style.setProperty('--music-bg', song.bg);
+        if (isPlaying) {
+            audio.play().catch(err => console.log("Playback error:", err));
+        }
+    };
+
+    nextBtn.onclick = (e) => {
+        e.stopPropagation();
+        currentSongIndex = (currentSongIndex + 1) % playlist.length;
+        loadSong(currentSongIndex);
+    };
+
+    prevBtn.onclick = (e) => {
+        e.stopPropagation();
+        currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
+        loadSong(currentSongIndex);
+    };
+
+    audio.onended = () => {
+        currentSongIndex = (currentSongIndex + 1) % playlist.length;
+        loadSong(currentSongIndex);
+    };
+
+    const pinBtn = document.getElementById('music-pin');
+    let isPinned = localStorage.getItem('music_pinned') === 'true';
+
+    if (isPinned) {
+        pinBtn.classList.add('active');
+    }
+
+    pinBtn.onclick = (e) => {
+        e.stopPropagation();
+        isPinned = !isPinned;
+        localStorage.setItem('music_pinned', isPinned);
+        pinBtn.classList.toggle('active', isPinned);
+        
+        if (isPinned) {
+            // Save current state to share with game tab
+            const musicState = {
+                currentSongIndex,
+                currentTime: audio.currentTime,
+                isPlaying
+            };
+            localStorage.setItem('music_state', JSON.stringify(musicState));
+        }
+    };
+
+    // Periodically save state if pinned
+    setInterval(() => {
+        if (isPinned) {
+            const musicState = {
+                currentSongIndex,
+                currentTime: audio.currentTime,
+                isPlaying
+            };
+            localStorage.setItem('music_state', JSON.stringify(musicState));
+        }
+    }, 1000);
+
+    // Calculate average color and set stroke (DISABLED for red border request)
+    // getAverageColor('assets/music_bg.jpg').then(avgColor => {
+        if (progressPath) {
+            progressPath.style.stroke = '#ff0000'; // Set to red
+            progressPath.style.filter = 'drop-shadow(0 0 5px rgba(255, 0, 0, 0.5))'; // Red glow
+            
+            const updateDashArray = () => {
+                const container = document.querySelector('.sidebar-music-player');
+                if (!container || container.offsetWidth === 0) return 0;
+                
+                const width = container.offsetWidth;
+                const height = container.offsetHeight;
+                const r = 24;
+                const inset = 2.5; // Stroke-width / 2
+                
+                const w = width - 2 * inset;
+                const h = height - 2 * inset;
+                const cx = w / 2;
+                
+                // Rounded rect path starting from top-center
+                const d = `M ${cx + inset},${inset} 
+                           L ${w - r + inset},${inset} 
+                           A ${r},${r} 0 0 1 ${w + inset},${r + inset} 
+                           L ${w + inset},${h - r + inset} 
+                           A ${r},${r} 0 0 1 ${w - r + inset},${h + inset} 
+                           L ${r + inset},${h + inset} 
+                           A ${r},${r} 0 0 1 ${inset},${h - r + inset} 
+                           L ${inset},${r + inset} 
+                           A ${r},${r} 0 0 1 ${r + inset},${inset} 
+                           L ${cx + inset},${inset} Z`;
+                
+                progressPath.setAttribute('d', d);
+                const preciseLength = progressPath.getTotalLength();
+                
+                progressPath.style.strokeDasharray = preciseLength;
+                progressPath.style.strokeDashoffset = preciseLength;
+                return preciseLength;
+            };
+
+            let totalLength = updateDashArray();
+            
+            // Observer to update when container becomes visible
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) {
+                    totalLength = updateDashArray();
+                }
+            });
+            const container = document.querySelector('.sidebar-music-player');
+            if (container) observer.observe(container);
+
+            window.addEventListener('resize', () => {
+                totalLength = updateDashArray();
+            });
+
+            audio.onloadedmetadata = () => {
+                totalLength = updateDashArray();
+            };
+
+            audio.ontimeupdate = () => {
+                if (totalLength === 0 || totalLength === undefined) totalLength = updateDashArray();
+                if (isNaN(audio.duration) || audio.duration === 0 || !totalLength) return;
+                const progress = audio.currentTime / audio.duration;
+                progressPath.style.strokeDashoffset = totalLength * (1 - progress);
+            };
+        }
+    // });
+
+    const updatePlayPauseBtn = () => {
+        playPauseBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+    };
+
+    playPauseBtn.onclick = (e) => {
+        e.stopPropagation(); // Don't trigger the document-level autoplay
+        if (isPlaying) {
+            audio.pause();
+        } else {
+            audio.play().catch(err => console.log("Autoplay blocked, waiting for interaction", err));
+        }
+        isPlaying = !isPlaying;
+        updatePlayPauseBtn();
+    };
+
+    // Browsers block autoplay until the first user interaction.
+    // We listen for the first click anywhere on the page to start playing by default.
+    const startAutoplay = () => {
+        if (!isPlaying) {
+            audio.play().then(() => {
+                isPlaying = true;
+                updatePlayPauseBtn();
+            }).catch(() => {});
+        }
+    };
+
+    document.addEventListener('click', startAutoplay, { once: true });
+}
 
 async function main() {
+    setupBackgroundMusic();
     document.getElementById("loading-status").textContent = "Preparing engine...";
     await cheerpjInit({
         enableDebug: false
     });
+
+    await requestPersistentStorage();
 
     lib = await cheerpjRunLibrary(cheerpjWebRoot+"/freej2me-web.jar");
 
@@ -42,6 +336,37 @@ async function main() {
 
     document.getElementById("import-data-file").onchange = doImportData;
     document.getElementById("export-data-btn").onclick = doExportData;
+
+    // Sidebar Navigation
+    document.getElementById('nav-home').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        activeTab = 'all';
+        updateSidebarActive('nav-home');
+        fillGamesList(state.games, false);
+    });
+
+    document.getElementById('nav-games').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelector('.section-title').scrollIntoView({ behavior: 'smooth' });
+        activeTab = 'all';
+        updateSidebarActive('nav-games');
+        fillGamesList(state.games, false);
+    });
+
+    document.getElementById('nav-favorites').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelector('.section-title').scrollIntoView({ behavior: 'smooth' });
+        activeTab = 'favorites';
+        updateSidebarActive('nav-favorites');
+        fillGamesList(state.games, true);
+    });
+}
+
+function updateSidebarActive(id) {
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(item => item.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
 }
 
 async function maybeReadCheerpJFileText(path) {
@@ -158,11 +483,17 @@ function getPlayUrl(appId, mobile) {
     return url;
 }
 
-function fillGamesList(games) {
+function fillGamesList(games, filterFavorites = false) {
     const container = document.getElementById("game-list");
     container.innerHTML = "";
 
+    const favorites = JSON.parse(localStorage.getItem('roylays_favorites') || '[]');
+
     for (const game of games) {
+        if (filterFavorites && !favorites.includes(game.appId)) {
+            continue;
+        }
+
         const card = document.createElement("div");
         card.className = "game-card";
 
@@ -173,6 +504,32 @@ function fillGamesList(games) {
         const icon = document.createElement("img");
         icon.src = game.icon;
         thumb.appendChild(icon);
+
+        // Favorite toggle
+        const favBtn = document.createElement("button");
+        favBtn.className = "fav-btn" + (favorites.includes(game.appId) ? " active" : "");
+        favBtn.innerHTML = '<i class="' + (favorites.includes(game.appId) ? "fas" : "far") + ' fa-heart"></i>';
+        favBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const currentFavs = JSON.parse(localStorage.getItem('roylays_favorites') || '[]');
+            if (currentFavs.includes(game.appId)) {
+                const index = currentFavs.indexOf(game.appId);
+                currentFavs.splice(index, 1);
+                favBtn.classList.remove("active");
+                favBtn.innerHTML = '<i class="far fa-heart"></i>';
+            } else {
+                currentFavs.push(game.appId);
+                favBtn.classList.add("active");
+                favBtn.innerHTML = '<i class="fas fa-heart"></i>';
+            }
+            localStorage.setItem('roylays_favorites', JSON.stringify(currentFavs));
+            
+            if (filterFavorites) {
+                card.remove();
+            }
+        };
+        thumb.appendChild(favBtn);
 
         // Play overlay
         const playOverlay = document.createElement("a");
@@ -251,10 +608,15 @@ function setupAddMode() {
     document.getElementById("game-file-input").disabled = false;
     document.getElementById("game-file-input").value = null;
 
-    document.getElementById("game-file-input").onchange = (e) => {
+    document.getElementById("game-file-input").onchange = async (e) => {
         // read file to arraybuffer
         const file = e.target.files[0];
         if (file) {
+            if (!(await requestPin())) {
+                e.target.value = null;
+                return;
+            }
+
             document.getElementById("game-file-input").disabled = true;
             document.getElementById("file-input-step").style.display = "none";
             document.getElementById("file-input-loading").style.display = "";
@@ -375,23 +737,27 @@ async function setupAddManageGame(app, isAdding) {
     previewControls.style.display = isAdding ? "none" : "";
     if (!isAdding) {
         document.getElementById("uninstall-btn").disabled = false;
-        document.getElementById("uninstall-btn").onclick = (e) => {
-            if (!confirm("Do you want to uninstall " + app.name + "?")) {
-                return;
-            }
+        document.getElementById("uninstall-btn").onclick = async (e) => {
+            if (await requestPin()) {
+                if (!confirm("Do you want to uninstall " + app.name + "?")) {
+                    return;
+                }
 
-            document.getElementById("uninstall-btn").disabled = true;
-            doUninstallGame(app.appId);
+                document.getElementById("uninstall-btn").disabled = true;
+                doUninstallGame(app.appId);
+            }
         };
 
         document.getElementById("wipe-data-btn").disabled = false;
-        document.getElementById("wipe-data-btn").onclick = (e) => {
-            if (!confirm("Do you want wipe " + app.name + " rms storage?")) {
-                return;
-            }
+        document.getElementById("wipe-data-btn").onclick = async (e) => {
+            if (await requestPin()) {
+                if (!confirm("Do you want wipe " + app.name + " rms storage?")) {
+                    return;
+                }
 
-            document.getElementById("wipe-data-btn").disabled = true;
-            doWipeData(app.appId);
+                document.getElementById("wipe-data-btn").disabled = true;
+                doWipeData(app.appId);
+            }
         };
     }
 
@@ -425,7 +791,7 @@ async function setupAddManageGame(app, isAdding) {
         dgFormat.value = app.settings.dgFormat;
     }
 
-    document.querySelector('input[name="enableSound"]').checked = app.settings.sound === "on";
+    document.querySelector('input[name="enableSound"]').checked = true; // Force sound on by default
     document.querySelector('input[name="rotate"]').checked = app.settings.rotate === "on";
     document.querySelector('input[name="forceFullscreen"]').checked = app.settings.forceFullscreen === "on";
     document.querySelector('input[name="textureDisableFilter"]').checked = app.settings.textureDisableFilter === "on";
@@ -558,7 +924,7 @@ async function reloadUI() {
     state.currentGame = null;
 
     state.games = await loadGames();
-    fillGamesList(state.games);
+    fillGamesList(state.games, activeTab === 'favorites');
     setupAddMode();
 }
 

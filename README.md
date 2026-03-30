@@ -32,8 +32,11 @@ Traditional layout mimicking old keypads—perfect for purists.
 ### 2. Modern Controls (Keyboard + Mouse)
 Familiar FPS-style layout for modern gamers.
 * **Movement:** `W`, `A`, `S`, `D`
-* **Action / OK:** `Right Click`
-* *(Keypad and Soft Keys remain the same as Classical)*
+* **Action / OK:** `Left Click`
+* **Left / Right Soft Keys:** `Q` / `E`
+* **Special Keys:** `X` (*)  |  `C` (#)
+* **Keypad:** `0` - `9` (same as Classical)
+* **Emulator Options:** `Esc`
 
 ### 3. Pro Controls (Controller) ⚡ *Haptic Feedback*
 Plug in a USB or Bluetooth controller to play mobile classics like console games!

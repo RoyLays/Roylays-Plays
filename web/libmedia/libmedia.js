@@ -214,6 +214,10 @@ export class MediaPlayer extends EventTarget {
     }
 
     async play() {
+        // Force restart if it's already at the end or playing to support rapid fire sound effects
+        if (this.mediaElement.ended || this.mediaElement.currentTime > 0) {
+            this.mediaElement.currentTime = 0;
+        }
         try {
             await this.mediaElement.play();
         } catch(e) {

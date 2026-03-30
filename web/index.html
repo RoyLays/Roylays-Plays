@@ -82,7 +82,7 @@
         position: fixed;
         inset: 0;
         z-index: 0;
-        background: url('assets/bg.png') center/cover no-repeat;
+        background: url('assets/music_bg.jpg') center/cover no-repeat;
         filter: brightness(0.35) saturate(0.8);
       }
 
@@ -358,6 +358,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        order: 10;
       }
 
       .topbar-btn {
@@ -388,10 +389,10 @@
       }
 
       .topbar-avatar {
-        width: 34px;
-        height: 34px;
+        width: 32px;
+        height: 32px;
+        background: var(--accent-red);
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--accent-red), #cc0000);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -490,6 +491,42 @@
         font-size: 2em;
         color: white;
         filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+      }
+
+      /* ===== FAVORITE BUTTON ===== */
+      .fav-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        transition: all 0.2s ease;
+      }
+
+      .fav-btn:hover {
+        background: rgba(0, 0, 0, 0.6);
+        transform: scale(1.1);
+      }
+
+      .fav-btn.active {
+        color: #ff4444;
+        background: rgba(255, 68, 68, 0.1);
+        border-color: rgba(255, 68, 68, 0.3);
+      }
+
+      .fav-btn i {
+        font-size: 0.9em;
       }
 
       .game-card-info {
@@ -1054,6 +1091,455 @@
         line-height: 1.4;
       }
 
+      /* ===== MODAL DIALOG ===== */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .pin-dialog {
+        background: var(--bg-dark);
+        border: 1px solid var(--glass-border-hover);
+        border-radius: var(--radius-lg);
+        padding: 32px;
+        width: 100%;
+        max-width: 360px;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+      }
+
+      .modal-overlay.active .pin-dialog {
+        transform: translateY(0);
+      }
+
+      .pin-dialog h2 {
+        font-size: 1.4em;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+      }
+
+      .pin-dialog p {
+        font-size: 0.9em;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+      }
+
+      .pin-input-container {
+        position: relative;
+        margin-bottom: 24px;
+      }
+
+      .pin-input-container input {
+        width: 100%;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid var(--glass-border);
+        border-radius: var(--radius-sm);
+        color: var(--text-primary);
+        font-size: 1.2em;
+        text-align: center;
+        letter-spacing: 4px;
+        outline: none;
+        transition: all var(--transition);
+      }
+
+      .pin-input-container input:focus {
+        border-color: var(--accent-red);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .pin-dialog-actions {
+        display: flex;
+        gap: 12px;
+      }
+
+      .pin-btn {
+        flex: 1;
+        padding: 12px;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--transition);
+        border: none;
+        font-family: var(--font);
+      }
+
+      .pin-btn-cancel {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text-secondary);
+      }
+
+      .pin-btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: var(--text-primary);
+      }
+
+      .pin-btn-confirm {
+        background: var(--accent-red);
+        color: white;
+      }
+
+      .pin-btn-confirm:hover {
+        background: #cc0000;
+        box-shadow: 0 0 15px var(--accent-red-glow);
+      }
+
+      .pin-error {
+        color: #ff5252;
+        font-size: 0.8em;
+        margin-top: 8px;
+        min-height: 1.2em;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .pin-error.visible {
+        opacity: 1;
+      }
+
+      .pin-tip {
+          font-size: 0.85em;
+          color: #ff4444;
+          margin-bottom: 16px;
+          background: rgba(255, 68, 68, 0.1);
+          padding: 8px 12px;
+          border-radius: var(--radius-sm);
+          border-left: 3px solid #ff4444;
+        }
+
+        .pin-toggle-btn {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--glass-border);
+          border-radius: 4px;
+          color: var(--text-secondary);
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .pin-toggle-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text-primary);
+          border-color: var(--glass-border-hover);
+        }
+
+        .pin-toggle-btn i {
+          font-size: 0.9em;
+        }
+
+        /* ===== STATUS BOX ===== */
+         .sidebar-status-box {
+           margin: 24px 14px 0;
+           padding: 14px 16px;
+           background: rgba(255, 255, 255, 0.03);
+           border: 1px solid var(--glass-border);
+           border-radius: 16px;
+           display: flex;
+           flex-direction: column;
+           gap: 10px;
+         }
+
+        .status-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 0.78em;
+          color: var(--text-secondary);
+        }
+
+        .status-row i {
+          width: 14px;
+          text-align: center;
+          font-size: 1.1em;
+          color: var(--accent-red);
+        }
+
+        #network-status.online { color: #2ecc71; }
+        #network-status.offline { color: #e74c3c; }
+
+        /* ===== TOPBAR SETTINGS & DROPDOWN ===== */
+        .topbar-settings {
+          position: relative;
+        }
+
+        .topbar-scheme-display {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 6px 14px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid var(--glass-border);
+          border-radius: 20px;
+          font-size: 0.72em;
+          color: var(--text-muted);
+          font-weight: 600;
+          margin-left: auto;
+          margin-right: 12px;
+          transition: all 0.3s ease;
+        }
+
+        .topbar-scheme-display i {
+          color: var(--accent-red);
+          font-size: 1.1em;
+        }
+
+        .topbar-scheme-display.active {
+          border-color: rgba(46, 204, 113, 0.3);
+          background: rgba(46, 204, 113, 0.05);
+          color: #2ecc71;
+        }
+
+        .topbar-scheme-display.active i {
+          color: #2ecc71;
+        }
+
+        .settings-dropdown {
+          position: absolute;
+          top: calc(100% + 10px);
+          right: 0;
+          width: 320px;
+          background: var(--bg-dark);
+          border: 1px solid var(--glass-border);
+          border-radius: var(--radius);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+          padding: 16px;
+          z-index: 1000;
+          display: none;
+          flex-direction: column;
+          gap: 16px;
+          animation: dropdownFade 0.2s ease;
+        }
+
+        .settings-dropdown.active {
+          display: flex;
+        }
+
+        @keyframes dropdownFade {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-info-box {
+          padding: 12px;
+          background: rgba(255, 153, 0, 0.08);
+          border: 1px solid rgba(255, 153, 0, 0.2);
+          border-radius: 12px;
+          display: flex;
+          gap: 10px;
+          font-size: 0.72em;
+          color: var(--text-secondary);
+          line-height: 1.4;
+        }
+
+        .dropdown-info-box i {
+          color: #ff9900;
+          font-size: 1.1em;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+
+        .dropdown-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .dropdown-btn {
+          width: 100%;
+          padding: 10px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--glass-border);
+          border-radius: var(--radius-xs);
+          color: var(--text-primary);
+          font-family: var(--font);
+          font-size: 0.85em;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          transition: all var(--transition);
+        }
+
+        .dropdown-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: var(--accent-red);
+        }
+
+        /* ===== MUSIC PLAYER ===== */
+      /* MUSIC PLAYER VERSION 2.1 */
+      .sidebar-music-player {
+        margin: auto 14px 20px;
+        padding: 16px;
+        background: rgba(0, 0, 0, 0.4); /* Darker background to see the ring and blurred image better */
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        --music-bg: url('assets/music_bg.jpg');
+      }
+
+      .sidebar-music-player::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--music-bg) center/cover no-repeat !important;
+        filter: blur(1.5px);
+        opacity: 0.95;
+        z-index: -1;
+        pointer-events: none;
+        transition: background 0.5s ease;
+      }
+
+      .music-progress-container {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 20; /* Ensure it's above everything */
+        width: 100%;
+        height: 100%;
+      }
+
+      .music-progress-path {
+        fill: none;
+        stroke: #ff0000; /* Bright red default fallback */
+        stroke-width: 5; /* Slightly thicker for visibility */
+        stroke-linecap: round;
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        transition: stroke-dashoffset 0.1s linear;
+        filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.5)); /* Add glow */
+      }
+
+      .music-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+      }
+
+      .music-pin-btn {
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.7em;
+        transition: all var(--transition);
+        z-index: 30;
+      }
+
+      .music-pin-btn.active {
+        background: var(--accent-red);
+        border-color: var(--accent-red);
+        box-shadow: 0 0 10px var(--accent-red-glow);
+      }
+
+      .music-pin-btn:hover {
+        transform: scale(1.1);
+      }
+
+      .music-cover {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: url('assets/logo.png') center/cover no-repeat;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .music-cast-icon {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.2em;
+      }
+
+      .music-info {
+        margin-top: 4px;
+      }
+
+      .music-title {
+        font-size: 0.95em;
+        font-weight: 700;
+        color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .music-artist {
+        font-size: 0.8em;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 2px;
+      }
+
+      .music-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 24px;
+        margin-top: 8px;
+      }
+
+      .music-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 1.1em;
+        opacity: 0.4;
+        transition: all 0.2s ease;
+      }
+
+      .music-btn:hover {
+        opacity: 0.8;
+      }
+
+      .music-btn.play-pause {
+        opacity: 1;
+        font-size: 1.5em;
+      }
+
+      .music-btn.disabled {
+        cursor: not-allowed;
+        opacity: 0.15;
+      }
+
       /* ===== SCROLLBAR ===== */
       ::-webkit-scrollbar {
         width: 6px;
@@ -1081,22 +1567,441 @@
       }
 
       /* ===== RESPONSIVE ===== */
+      @media (max-width: 1024px) {
+        .content-area {
+          padding: 18px;
+        }
+
+        .topbar {
+          padding: 0 14px;
+          gap: 10px;
+        }
+
+        .topbar-search {
+          max-width: 360px;
+        }
+
+        .topbar-btn {
+          padding: 7px 10px;
+          font-size: 0.8em;
+        }
+      }
+
       @media (max-width: 768px) {
+        .app-layout {
+          flex-direction: column;
+        }
+
         .sidebar {
+          width: 100%;
+          height: auto;
+          border-right: none;
+          border-bottom: 1px solid var(--glass-border);
+          overflow-x: auto;
+          overflow-y: hidden;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 10px;
+        }
+
+        .sidebar-brand {
+          flex-shrink: 0;
+          border-bottom: none;
+          padding: 4px 8px;
+        }
+
+        .sidebar-brand .brand-name {
+          font-size: 0.9em;
+        }
+
+        .sidebar-section {
+          border-bottom: none;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-shrink: 0;
+        }
+
+        .sidebar-section-title {
           display: none;
         }
-        .content-area {
-          padding: 16px;
+
+        .sidebar-item {
+          padding: 8px 10px;
+          border: 1px solid var(--glass-border);
+          border-radius: 8px;
+          white-space: nowrap;
+          font-size: 0.8em;
+          gap: 8px;
         }
+
+        .sidebar-item.active {
+          border-left: 1px solid var(--accent-red);
+          padding-left: 10px;
+        }
+
+        .main-area {
+          min-height: 0;
+        }
+
+        .topbar {
+          height: auto;
+          min-height: var(--topbar-height);
+          flex-wrap: wrap;
+          padding: 10px 12px;
+          gap: 8px;
+        }
+
+        .topbar-sync {
+          display: none;
+        }
+
+        .topbar-search {
+          order: 1;
+          min-width: 0;
+          max-width: none;
+          width: 100%;
+          flex: 1 1 100%;
+        }
+
+        .topbar-spacer {
+          display: none;
+        }
+
+        .topbar-actions {
+          order: 2;
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        .topbar-btn {
+          flex: 1 1 calc(50% - 4px);
+          justify-content: center;
+          padding: 8px 10px;
+        }
+
+        .topbar-scheme-display {
+          display: none;
+        }
+
+        .topbar-avatar {
+          display: none;
+        }
+
+        .content-area {
+          padding: 14px;
+        }
+
+        .section-title {
+          font-size: 1em;
+        }
+
         .game-cards-grid {
           grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
           gap: 12px;
         }
-        .topbar-search {
-          max-width: 300px;
+
+        .glass-panel {
+          padding: 14px;
+        }
+
+        .glass-panel-header {
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .settings-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .settings-grid *:nth-child(2n + 1):last-child {
+          grid-column: auto;
+        }
+
+        .preview-container {
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .manage-controls {
+          width: 100%;
+          justify-content: flex-start;
+        }
+
+        .control-tabs {
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .control-tab {
+          flex: 1 1 calc(50% - 4px);
+          justify-content: center;
+        }
+
+        .scheme-header {
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .connection-badges {
+          width: 100%;
+        }
+
+        .scheme-table td {
+          font-size: 0.84em;
+          padding: 9px 8px;
+        }
+
+        .scheme-table .key {
+          min-width: 22px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .sidebar {
+          padding: 6px 8px;
+        }
+
+        .sidebar-brand img {
+          width: 26px;
+        }
+
+        .sidebar-brand .brand-name {
+          display: none;
+        }
+
+        .sidebar-item {
+          font-size: 0.76em;
+        }
+
+        .content-area {
+          padding: 10px;
+        }
+
+        .game-cards-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .game-card-btn {
+          flex: 1;
+          text-align: center;
+        }
+
+        .btn,
+        .save-button,
+        .control-button {
+          width: 100%;
+        }
+
+        .manage-controls {
+          flex-direction: column;
+        }
+
+        .topbar-btn {
+          font-size: 0.76em;
+        }
+
+        .scheme-table td {
+          font-size: 0.78em;
         }
       }
     </style>
+
+    <div id="pin-modal" class="modal-overlay">
+      <div class="pin-dialog">
+        <h2>Access PIN Required</h2>
+        <p>Please enter the PIN to continue with this action.</p>
+        <div class="pin-tip">Tip! Check About Section For Access PIN</div>
+        <div class="pin-input-container">
+          <input type="password" id="pin-input" placeholder="••••••••" maxlength="12" autocomplete="off" />
+          <div id="pin-error-msg" class="pin-error">Incorrect PIN. Access Denied.</div>
+        </div>
+        <div class="pin-dialog-actions">
+          <button id="pin-cancel-btn" class="pin-btn pin-btn-cancel">Cancel</button>
+          <button id="pin-confirm-btn" class="pin-btn pin-btn-confirm">Unlock</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="controls-modal" class="modal-overlay">
+      <div class="pin-dialog" style="max-width: 600px; text-align: left; padding: 24px;">
+        <div class="glass-panel-header" style="margin-bottom: 20px;">
+          <div class="glass-panel-title">
+            <i class="fas fa-sliders-h"></i>
+            <span>Controls & Peripherals</span>
+          </div>
+          <div class="live-test-badge" id="live-test-badge">
+            <span class="live-dot"></span> LIVE TEST
+          </div>
+        </div>
+
+        <!-- Control Scheme Selector Tabs -->
+        <div class="control-tabs" id="control-tabs">
+          <button class="control-tab active" data-scheme="classical">
+            <i class="fas fa-keyboard"></i> Classical
+          </button>
+          <button class="control-tab" data-scheme="modern">
+            <i class="fas fa-mouse-pointer"></i> Modern
+          </button>
+          <button class="control-tab" data-scheme="pro">
+            <i class="fas fa-gamepad"></i> Pro
+          </button>
+        </div>
+
+        <!-- Classical Scheme -->
+        <div class="control-scheme-panel active" id="scheme-classical">
+          <div class="scheme-card">
+            <div class="scheme-header">
+              <div class="scheme-icon">🎹</div>
+              <div>
+                <div class="scheme-name">Classical Controls</div>
+                <div class="scheme-desc">Traditional keyboard layout — arrow keys + number pad</div>
+              </div>
+              <div class="connection-badges">
+                <span class="conn-badge connected"><i class="fas fa-keyboard"></i> Keyboard</span>
+              </div>
+            </div>
+            <div class="test-hint">
+              <i class="fas fa-hand-pointer"></i>
+              Press any key to test — matching control will light up
+            </div>
+            <table class="scheme-table">
+              <tr data-keys="ArrowUp,ArrowDown,ArrowLeft,ArrowRight"><td><span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span></td><td>Movement</td></tr>
+              <tr data-keys="Enter"><td><span class="key">⏎ Enter</span></td><td>Action / OK</td></tr>
+              <tr data-keys="Escape"><td><span class="key">Esc</span></td><td>Emulator options</td></tr>
+              <tr data-keys="F1,KeyQ"><td><span class="key">F1</span> / <span class="key">Q</span></td><td>Left soft key</td></tr>
+              <tr data-keys="F2,KeyW"><td><span class="key">F2</span> / <span class="key">W</span></td><td>Right soft key</td></tr>
+              <tr data-keys="Digit0,Digit1,Digit2,Digit3,Digit4,Digit5,Digit6,Digit7,Digit8,Digit9"><td><span class="key">0</span> – <span class="key">9</span></td><td>Keypad numbers</td></tr>
+              <tr data-keys="KeyE"><td><span class="key">E</span></td><td>* key</td></tr>
+              <tr data-keys="KeyR"><td><span class="key">R</span></td><td># key</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modern Scheme -->
+        <div class="control-scheme-panel" id="scheme-modern">
+          <div class="scheme-card">
+            <div class="scheme-header">
+              <div class="scheme-icon">🖱️</div>
+              <div>
+                <div class="scheme-name">Modern Controls</div>
+                <div class="scheme-desc">WASD + Mouse — familiar FPS-style layout</div>
+              </div>
+              <div class="connection-badges">
+                <span class="conn-badge connected"><i class="fas fa-keyboard"></i> Keyboard</span>
+                <span class="conn-badge connected"><i class="fas fa-mouse"></i> Mouse</span>
+              </div>
+            </div>
+            <div class="test-hint">
+              <i class="fas fa-hand-pointer"></i>
+              Press any key or left-click to test — matching control will light up
+            </div>
+            <table class="scheme-table">
+              <tr data-keys="KeyW,KeyA,KeyS,KeyD"><td><span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span></td><td>Movement (Up, Left, Down, Right)</td></tr>
+              <tr data-keys="leftclick"><td><span class="key">Left Click</span></td><td>Action / OK</td></tr>
+              <tr data-keys="Escape"><td><span class="key">Esc</span></td><td>Emulator options</td></tr>
+              <tr data-keys="KeyQ"><td><span class="key">Q</span></td><td>Left soft key</td></tr>
+              <tr data-keys="KeyE"><td><span class="key">E</span></td><td>Right soft key</td></tr>
+              <tr data-keys="KeyX"><td><span class="key">X</span></td><td>* key</td></tr>
+              <tr data-keys="KeyC"><td><span class="key">C</span></td><td># key</td></tr>
+              <tr data-keys="Digit0,Digit1,Digit2,Digit3,Digit4,Digit5,Digit6,Digit7,Digit8,Digit9"><td><span class="key">0</span> – <span class="key">9</span></td><td>Keypad numbers</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pro Scheme -->
+        <div class="control-scheme-panel" id="scheme-pro">
+          <div class="scheme-card">
+            <div class="scheme-header">
+              <div class="scheme-icon">🎮</div>
+              <div>
+                <div class="scheme-name">Pro Controls <span class="haptic-badge">⚡ Haptic Feedback</span></div>
+                <div class="scheme-desc">Xbox / USB controller — plug in and play with vibration</div>
+              </div>
+              <div class="connection-badges">
+                <span class="conn-badge disconnected" id="gamepad-conn-badge"><i class="fas fa-gamepad"></i> <span id="gamepad-conn-text">No Controller</span></span>
+              </div>
+            </div>
+            <div class="controller-notice" id="controller-notice">
+              <i class="fas fa-info-circle"></i>
+              Connect a USB/Bluetooth controller and press any button to activate it
+            </div>
+            <div class="test-hint">
+              <i class="fas fa-hand-pointer"></i>
+              Press any controller button to test — matching control will light up
+            </div>
+            <table class="scheme-table">
+              <tr data-buttons="12,13,14,15"><td><span class="key">D-Pad</span></td><td>Movement (Up, Down, Left, Right)</td></tr>
+              <tr data-buttons="0"><td><span class="key">A</span></td><td>Action / Enter</td></tr>
+              <tr data-buttons="1"><td><span class="key">B</span></td><td>Back / Right Soft Key</td></tr>
+              <tr data-buttons="2"><td><span class="key">X</span></td><td>Keypad 5 (Fire / Interact)</td></tr>
+              <tr data-buttons="3"><td><span class="key">Y</span></td><td>Keypad 0</td></tr>
+              <tr data-buttons="4,5"><td><span class="key">LB</span> / <span class="key">RB</span></td><td>Left / Right Soft Keys</td></tr>
+              <tr data-buttons="6,7"><td><span class="key">LT</span> / <span class="key">RT</span></td><td>* and # Keys</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="pin-dialog-actions" style="margin-top: 24px; gap: 12px; display: flex;">
+          <button id="controls-save-btn" class="pin-btn pin-btn-confirm" style="background: var(--accent-red); flex: 1;">Save Controls</button>
+          <button id="controls-close-btn" class="pin-btn pin-btn-cancel" style="flex: 1;">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="about-modal" class="modal-overlay">
+      <div class="pin-dialog" style="max-width: 480px; text-align: left;">
+        <h2 style="text-align: center; margin-bottom: 20px;">About Roylays Plays</h2>
+        <div style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95em;">
+          <p>Roylays Plays is a modern web-based J2ME emulator, allowing you to relive the classic mobile gaming era directly in your browser.</p>
+          
+          <div style="margin-top: 24px; padding: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: var(--radius-sm);">
+            <h3 style="color: var(--text-primary); margin-top: 0; margin-bottom: 12px; font-size: 1.1em;">
+              <i class="fab fa-youtube" style="margin-right: 8px; color: #ff0000;"></i> Support My Channels
+            </h3>
+            <p style="margin-bottom: 16px; font-style: italic; color: var(--text-secondary);">
+              Please Support My Youtube Channels, As It is a small attemp of reviving to play our childhood games
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                <span style="color: var(--text-secondary);">Gaming Channel (Bengali)</span>
+                <a href="https://www.youtube.com/@roylayslive" target="_blank" style="color: #ff4444; text-decoration: none; font-weight: 600;">@roylayslive <i class="fas fa-external-link-alt" style="font-size: 0.8em; margin-left: 4px;"></i></a>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                <span style="color: var(--text-secondary);">RoyLays (Hindi)</span>
+                <a href="https://www.youtube.com/@roylaysyt" target="_blank" style="color: #ff4444; text-decoration: none; font-weight: 600;">@roylaysyt <i class="fas fa-external-link-alt" style="font-size: 0.8em; margin-left: 4px;"></i></a>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-secondary);">Otaku hotspot (Bengali)</span>
+                <a href="https://www.youtube.com/@otakuhotspotyt/shorts" target="_blank" style="color: #ff4444; text-decoration: none; font-weight: 600;">@otakuhotspotyt <i class="fas fa-external-link-alt" style="font-size: 0.8em; margin-left: 4px;"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 24px; padding: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: var(--radius-sm);">
+            <h3 style="color: var(--text-primary); margin-top: 0; margin-bottom: 12px; font-size: 1.1em;">
+              <i class="fas fa-lock" style="margin-right: 8px; color: var(--accent-red);"></i> Security & Access
+            </h3>
+            <p style="margin-bottom: 8px;">Some administrative actions (like adding games or wiping data) require an Access PIN.</p>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <p style="font-weight: 700; color: var(--text-primary); font-size: 1.1em; background: rgba(255, 0, 0, 0.1); display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 4px; border: 1px dashed var(--accent-red); margin: 0;">
+                Access PIN: <span id="about-pin-display" class="pin-hidden" style="color: var(--accent-red); letter-spacing: 1px; margin-left: 8px;">••••••••</span>
+              </p>
+              <button id="toggle-about-pin" class="pin-toggle-btn" title="Toggle PIN visibility">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <p style="margin-top: 20px; font-size: 0.85em; opacity: 0.7; text-align: center;">Powered by FreeJ2ME & CheerpJ technology.</p>
+        </div>
+        <div class="pin-dialog-actions" style="margin-top: 24px;">
+          <button id="about-close-btn" class="pin-btn pin-btn-confirm">Close</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Background -->
     <div class="app-background"></div>
@@ -1153,6 +2058,47 @@
             <i class="fas fa-info-circle"></i> About
           </a>
         </div>
+
+        <!-- Sidebar Status Box -->
+        <div class="sidebar-status-box">
+          <div class="status-row">
+            <i class="fas fa-globe"></i>
+            <span id="network-status">Checking...</span>
+          </div>
+          <div class="status-row">
+            <i class="fas fa-map-marker-alt"></i>
+            <span id="user-location">Detecting...</span>
+          </div>
+          <div class="status-row">
+            <i class="fas fa-clock"></i>
+            <span id="user-time">00:00:00</span>
+          </div>
+        </div>
+
+        <!-- Sidebar Music Player -->
+        <div class="sidebar-music-player" data-v="2.0">
+          <svg class="music-progress-container">
+            <path class="music-progress-path" d="M0,0"></path>
+          </svg>
+          <div class="music-top">
+            <button class="music-pin-btn" id="music-pin" title="Pin Music (Background playback during games)">
+              <i class="fas fa-thumbtack"></i>
+            </button>
+            <div class="music-cover" id="music-cover"></div>
+            <div class="music-cast-icon">
+              <i class="fas fa-rss"></i>
+            </div>
+          </div>
+          <div class="music-info">
+            <div class="music-title" id="music-title">Shounen ki</div>
+            <div class="music-artist">negimaavni</div>
+          </div>
+          <div class="music-controls">
+            <button class="music-btn" id="music-prev"><i class="fas fa-step-backward"></i></button>
+            <button class="music-btn play-pause" id="music-play-pause"><i class="fas fa-play"></i></button>
+            <button class="music-btn" id="music-next"><i class="fas fa-step-forward"></i></button>
+          </div>
+        </div>
       </nav>
 
       <!-- Main Content -->
@@ -1169,19 +2115,34 @@
 
           <div class="topbar-spacer"></div>
 
-          <div class="topbar-actions">
-            <button class="topbar-btn" id="import-data-btn">
-              <i class="fas fa-file-import"></i> Import Data
-            </button>
-            <input type="file" id="import-data-file" style="display: none" accept=".zip" />
+          <div class="topbar-avatar">R</div>
 
-            <button class="topbar-btn" id="export-data-btn">
-              <i class="fas fa-file-export"></i> Export Data
-            </button>
-            <a id="export-data-link" style="display: none" download="freej2me-data.zip">x</a>
+          <div class="topbar-scheme-display" id="topbar-scheme-display">
+            <i class="fas fa-keyboard"></i> <span>No Controls Selected</span>
           </div>
 
-          <div class="topbar-avatar">R</div>
+          <div class="topbar-settings">
+            <button class="topbar-btn" id="settings-toggle-btn">
+              <i class="fas fa-cog"></i> Settings
+            </button>
+            <div class="settings-dropdown" id="settings-dropdown">
+              <div class="dropdown-info-box">
+                <i class="fas fa-save"></i>
+                <span>Saves &amp; game progress stay in this browser (IndexedDB). Use Export Data for a backup file — clearing site data will erase them.</span>
+              </div>
+              <div class="dropdown-actions">
+                <button class="dropdown-btn" id="import-data-btn">
+                  <i class="fas fa-file-import"></i> Import Data
+                </button>
+                <input type="file" id="import-data-file" style="display: none" accept=".zip" />
+
+                <button class="dropdown-btn" id="export-data-btn">
+                  <i class="fas fa-file-export"></i> Export Data
+                </button>
+                <a id="export-data-link" style="display: none" download="freej2me-data.zip">x</a>
+              </div>
+            </div>
+          </div>
         </header>
 
         <!-- Scrollable Content -->
@@ -1335,125 +2296,7 @@
             </div>
           </div>
 
-          <!-- Keyboard Controls -->
-          <div class="glass-panel" style="padding: 20px;">
-            <div class="glass-panel-header" style="margin-bottom: 20px;">
-              <div class="glass-panel-title">
-                <i class="fas fa-sliders-h"></i>
-                <span>Controls & Peripherals</span>
-              </div>
-              <div class="live-test-badge" id="live-test-badge">
-                <span class="live-dot"></span> LIVE TEST
-              </div>
-            </div>
-
-            <!-- Control Scheme Selector Tabs -->
-            <div class="control-tabs" id="control-tabs">
-              <button class="control-tab active" data-scheme="classical">
-                <i class="fas fa-keyboard"></i> Classical
-              </button>
-              <button class="control-tab" data-scheme="modern">
-                <i class="fas fa-mouse-pointer"></i> Modern
-              </button>
-              <button class="control-tab" data-scheme="pro">
-                <i class="fas fa-gamepad"></i> Pro
-              </button>
-            </div>
-
-            <!-- Classical Scheme -->
-            <div class="control-scheme-panel active" id="scheme-classical">
-              <div class="scheme-card">
-                <div class="scheme-header">
-                  <div class="scheme-icon">🎹</div>
-                  <div>
-                    <div class="scheme-name">Classical Controls</div>
-                    <div class="scheme-desc">Traditional keyboard layout — arrow keys + number pad</div>
-                  </div>
-                  <div class="connection-badges">
-                    <span class="conn-badge connected"><i class="fas fa-keyboard"></i> Keyboard</span>
-                  </div>
-                </div>
-                <div class="test-hint">
-                  <i class="fas fa-hand-pointer"></i>
-                  Press any key to test — matching control will light up
-                </div>
-                <table class="scheme-table">
-                  <tr data-keys="ArrowUp,ArrowDown,ArrowLeft,ArrowRight"><td><span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span></td><td>Movement</td></tr>
-                  <tr data-keys="Enter"><td><span class="key">⏎ Enter</span></td><td>Action / OK</td></tr>
-                  <tr data-keys="Escape"><td><span class="key">Esc</span></td><td>Emulator options</td></tr>
-                  <tr data-keys="F1,KeyQ"><td><span class="key">F1</span> / <span class="key">Q</span></td><td>Left soft key</td></tr>
-                  <tr data-keys="F2,KeyW"><td><span class="key">F2</span> / <span class="key">W</span></td><td>Right soft key</td></tr>
-                  <tr data-keys="Digit0,Digit1,Digit2,Digit3,Digit4,Digit5,Digit6,Digit7,Digit8,Digit9"><td><span class="key">0</span> – <span class="key">9</span></td><td>Keypad numbers</td></tr>
-                  <tr data-keys="KeyE"><td><span class="key">E</span></td><td>* key</td></tr>
-                  <tr data-keys="KeyR"><td><span class="key">R</span></td><td># key</td></tr>
-                </table>
-              </div>
-            </div>
-
-            <!-- Modern Scheme -->
-            <div class="control-scheme-panel" id="scheme-modern">
-              <div class="scheme-card">
-                <div class="scheme-header">
-                  <div class="scheme-icon">🖱️</div>
-                  <div>
-                    <div class="scheme-name">Modern Controls</div>
-                    <div class="scheme-desc">WASD + Mouse — familiar FPS-style layout</div>
-                  </div>
-                  <div class="connection-badges">
-                    <span class="conn-badge connected"><i class="fas fa-keyboard"></i> Keyboard</span>
-                    <span class="conn-badge connected"><i class="fas fa-mouse"></i> Mouse</span>
-                  </div>
-                </div>
-                <div class="test-hint">
-                  <i class="fas fa-hand-pointer"></i>
-                  Press any key or right-click to test — matching control will light up
-                </div>
-                <table class="scheme-table">
-                  <tr data-keys="KeyW,KeyA,KeyS,KeyD"><td><span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span></td><td>Movement (Up, Left, Down, Right)</td></tr>
-                  <tr data-keys="rightclick"><td><span class="key">Right Click</span></td><td>Action / OK</td></tr>
-                  <tr data-keys="Escape"><td><span class="key">Esc</span></td><td>Emulator options</td></tr>
-                  <tr data-keys="KeyE"><td><span class="key">E</span></td><td>* key</td></tr>
-                  <tr data-keys="KeyR"><td><span class="key">R</span></td><td># key</td></tr>
-                  <tr data-keys="Digit0,Digit1,Digit2,Digit3,Digit4,Digit5,Digit6,Digit7,Digit8,Digit9"><td><span class="key">0</span> – <span class="key">9</span></td><td>Keypad numbers</td></tr>
-                  <tr data-keys="F1"><td><span class="key">F1</span></td><td>Left soft key</td></tr>
-                  <tr data-keys="F2"><td><span class="key">F2</span></td><td>Right soft key</td></tr>
-                </table>
-              </div>
-            </div>
-
-            <!-- Pro Scheme -->
-            <div class="control-scheme-panel" id="scheme-pro">
-              <div class="scheme-card">
-                <div class="scheme-header">
-                  <div class="scheme-icon">🎮</div>
-                  <div>
-                    <div class="scheme-name">Pro Controls <span class="haptic-badge">⚡ Haptic Feedback</span></div>
-                    <div class="scheme-desc">Xbox / USB controller — plug in and play with vibration</div>
-                  </div>
-                  <div class="connection-badges">
-                    <span class="conn-badge disconnected" id="gamepad-conn-badge"><i class="fas fa-gamepad"></i> <span id="gamepad-conn-text">No Controller</span></span>
-                  </div>
-                </div>
-                <div class="controller-notice" id="controller-notice">
-                  <i class="fas fa-info-circle"></i>
-                  Connect a USB/Bluetooth controller and press any button to activate it
-                </div>
-                <div class="test-hint">
-                  <i class="fas fa-hand-pointer"></i>
-                  Press any controller button to test — matching control will light up
-                </div>
-                <table class="scheme-table">
-                  <tr data-buttons="12,13,14,15"><td><span class="key">D-Pad</span></td><td>Movement (Up, Down, Left, Right)</td></tr>
-                  <tr data-buttons="0"><td><span class="key">A</span></td><td>Action / Enter</td></tr>
-                  <tr data-buttons="1"><td><span class="key">B</span></td><td>Back / Right Soft Key</td></tr>
-                  <tr data-buttons="2"><td><span class="key">X</span></td><td>Keypad 5 (Fire / Interact)</td></tr>
-                  <tr data-buttons="3"><td><span class="key">Y</span></td><td>Keypad 0</td></tr>
-                  <tr data-buttons="4,5"><td><span class="key">LB</span> / <span class="key">RB</span></td><td>Left / Right Soft Keys</td></tr>
-                  <tr data-buttons="6,7"><td><span class="key">LT</span> / <span class="key">RT</span></td><td>* and # Keys</td></tr>
-                </table>
-              </div>
-            </div>
-          </div>
+          <!-- Add Game Panel (hidden by default) -->
 
           <style>
             /* ===== LIVE TEST BADGE ===== */
@@ -1731,198 +2574,331 @@
             }
           </style>
 
-          <!-- Control scheme tab switcher + live input tester script -->
           <script>
             document.addEventListener('DOMContentLoaded', () => {
-              const tabs = document.querySelectorAll('.control-tab');
-              const panels = document.querySelectorAll('.control-scheme-panel');
+              // ================================================
+              // AUDIO SYSTEM
+              // ================================================
+              let audioCtx;
+              function initAudio() {
+                if (!audioCtx) {
+                  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                  audioCtx.resume();
+                }
+              }
 
-              // Load saved scheme
-              const saved = localStorage.getItem('roylays_control_scheme') || 'classical';
-              setActiveScheme(saved);
+              function playFeedbackSound() {
+                initAudio();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.1);
+              }
 
-              tabs.forEach(tab => {
+              function playRejectionSound() {
+                initAudio();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+              }
+
+              // ================================================
+              // MODAL SYSTEM
+              // ================================================
+              function setupModal(modalId, triggerId, closeId) {
+                const modal = document.getElementById(modalId);
+                const trigger = document.getElementById(triggerId);
+                const closeBtn = document.getElementById(closeId);
+
+                if (trigger) {
+                  trigger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (modalId === 'controls-modal') initAudio();
+                    modal.classList.add('active');
+                  });
+                }
+
+                if (closeBtn) {
+                  closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+                }
+
+                modal.addEventListener('click', (e) => {
+                  if (e.target === modal) modal.classList.remove('active');
+                });
+              }
+
+              setupModal('controls-modal', 'nav-controls', 'controls-close-btn');
+              setupModal('about-modal', 'nav-about', 'about-close-btn');
+              setupModal('pin-modal', null, 'pin-cancel-btn');
+
+              // ================================================
+              // CONTROLS LOGIC
+              // ================================================
+              const controlTabs = document.querySelectorAll('.control-tab');
+              const controlPanels = document.querySelectorAll('.control-scheme-panel');
+              const schemeDisplay = document.getElementById('topbar-scheme-display');
+              const saveBtn = document.getElementById('controls-save-btn');
+
+              function updateSchemeDisplay() {
+                const savedScheme = localStorage.getItem('roylays_control_scheme');
+                if (savedScheme) {
+                  let name = savedScheme.charAt(0).toUpperCase() + savedScheme.slice(1);
+                  const icon = savedScheme === 'pro' ? 'gamepad' : 'keyboard';
+                  
+                  if (savedScheme === 'pro') {
+                    const gamepads = navigator.getGamepads();
+                    for (const gp of gamepads) {
+                      if (gp) {
+                        const padName = gp.id.split('(')[0].trim() || 'Controller';
+                        name = `Pro (${padName})`;
+                        break;
+                      }
+                    }
+                  }
+                  
+                  schemeDisplay.querySelector('span').textContent = `${name} Active`;
+                  schemeDisplay.classList.add('active');
+                  schemeDisplay.querySelector('i').className = `fas fa-${icon}`;
+                } else {
+                  schemeDisplay.querySelector('span').textContent = "No Controls Selected";
+                  schemeDisplay.classList.remove('active');
+                  schemeDisplay.querySelector('i').className = "fas fa-keyboard";
+                }
+              }
+
+              function setActiveTab(scheme) {
+                controlTabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-scheme') === scheme));
+                controlPanels.forEach(p => p.classList.toggle('active', p.id === `scheme-${scheme}`));
+              }
+
+              // Load saved scheme or default to classical
+              const initialScheme = localStorage.getItem('roylays_control_scheme') || 'classical';
+              setActiveTab(initialScheme);
+              updateSchemeDisplay();
+
+              controlTabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                  const scheme = tab.dataset.scheme;
-                  setActiveScheme(scheme);
-                  localStorage.setItem('roylays_control_scheme', scheme);
+                  setActiveTab(tab.getAttribute('data-scheme'));
                 });
               });
 
-              function setActiveScheme(scheme) {
-                tabs.forEach(t => t.classList.toggle('active', t.dataset.scheme === scheme));
-                panels.forEach(p => p.classList.toggle('active', p.id === 'scheme-' + scheme));
-              }
-
-              // ================================================
-              // LIVE INPUT TESTER — Keyboard & Mouse
-              // ================================================
-              const highlightTimers = new Map();
-
-              function highlightRow(row, duration = 300) {
-                row.classList.add('highlight');
-
-                // Clear previous timer for this row
-                if (highlightTimers.has(row)) {
-                  clearTimeout(highlightTimers.get(row));
+              saveBtn.addEventListener('click', () => {
+                const activeTab = document.querySelector('.control-tab.active');
+                const scheme = activeTab.getAttribute('data-scheme');
+                
+                if (scheme === 'pro') {
+                  const gamepads = navigator.getGamepads();
+                  let isConnected = false;
+                  for (const gp of gamepads) {
+                    if (gp) { isConnected = true; break; }
+                  }
+                  
+                  if (!isConnected) {
+                    playRejectionSound();
+                    alert("No Controller Found");
+                    return;
+                  }
                 }
 
-                const timer = setTimeout(() => {
-                  row.classList.remove('highlight');
-                  highlightTimers.delete(row);
-                }, duration);
-
-                highlightTimers.set(row, timer);
-              }
-
-              function highlightKeyDown(row) {
-                row.classList.add('highlight');
-              }
-
-              function highlightKeyUp(row) {
-                // Brief flash before removing
+                localStorage.setItem('roylays_control_scheme', scheme);
+                updateSchemeDisplay();
+                
+                const originalText = saveBtn.textContent;
+                saveBtn.textContent = "✓ Saved!";
+                saveBtn.style.background = "#2ecc71";
                 setTimeout(() => {
-                  row.classList.remove('highlight');
-                }, 100);
+                  saveBtn.textContent = originalText;
+                  saveBtn.style.background = "var(--accent-red)";
+                  document.getElementById('controls-modal').classList.remove('active');
+                }, 800);
+              });
+
+              // ================================================
+              // INPUT TESTING (Visual Highlights)
+              // ================================================
+              function highlightRow(row) {
+                row.classList.add('highlight');
+                setTimeout(() => row.classList.remove('highlight'), 200);
               }
 
-              // Find rows matching a keyboard code in ALL visible scheme panels
-              function findRowsForKey(keyCode) {
-                const activePanel = document.querySelector('.control-scheme-panel.active');
-                if (!activePanel) return [];
-
-                const rows = activePanel.querySelectorAll('tr[data-keys]');
-                const matched = [];
-
-                rows.forEach(row => {
-                  const keys = row.dataset.keys.split(',');
-                  if (keys.includes(keyCode)) {
-                    matched.push(row);
-                  }
-                });
-
-                return matched;
-              }
-
-              // Find rows matching a gamepad button index
-              function findRowsForButton(buttonIdx) {
-                const activePanel = document.querySelector('.control-scheme-panel.active');
-                if (!activePanel) return [];
-
-                const rows = activePanel.querySelectorAll('tr[data-buttons]');
-                const matched = [];
-
-                rows.forEach(row => {
-                  const buttons = row.dataset.buttons.split(',');
-                  if (buttons.includes(String(buttonIdx))) {
-                    matched.push(row);
-                  }
-                });
-
-                return matched;
-              }
-
-              // Keyboard events for live testing
               document.addEventListener('keydown', (e) => {
-                const rows = findRowsForKey(e.code);
-                rows.forEach(row => highlightKeyDown(row));
+                const modal = document.getElementById('controls-modal');
+                if (!modal.classList.contains('active')) return;
+                initAudio();
+
+                const rows = document.querySelectorAll('.scheme-table tr[data-keys]');
+                rows.forEach(row => {
+                  if (row.getAttribute('data-keys').split(',').includes(e.code)) {
+                    playFeedbackSound();
+                    highlightRow(row);
+                  }
+                });
               });
 
-              document.addEventListener('keyup', (e) => {
-                const rows = findRowsForKey(e.code);
-                rows.forEach(row => highlightKeyUp(row));
-              });
-
-              // Right-click for Modern scheme testing
-              document.addEventListener('contextmenu', (e) => {
-                const activePanel = document.querySelector('.control-scheme-panel.active');
-                if (activePanel && activePanel.id === 'scheme-modern') {
-                  e.preventDefault();
-                  const rows = findRowsForKey('rightclick');
-                  rows.forEach(row => highlightRow(row, 400));
+              document.addEventListener('mousedown', (e) => {
+                const modal = document.getElementById('controls-modal');
+                if (!modal.classList.contains('active')) return;
+                if (e.button === 0) {
+                  const row = document.querySelector('.scheme-table tr[data-keys*="leftclick"]');
+                  if (row) {
+                    playFeedbackSound();
+                    highlightRow(row);
+                  }
                 }
               });
 
               // ================================================
-              // LIVE INPUT TESTER — Gamepad
+              // GAMEPAD STATUS & LOOP
               // ================================================
-              let gamepadPollId = null;
-              let prevButtonStates = {};
+              let gamepadState = {};
 
-              function getGamepad() {
-                const gps = navigator.getGamepads();
-                for (let i = 0; i < gps.length; i++) {
-                  if (gps[i]) return gps[i];
+              function updateGamepadStatus() {
+                const gamepads = navigator.getGamepads();
+                let connectedPad = null;
+                for (const gp of gamepads) {
+                  if (gp) { connectedPad = gp; break; }
                 }
-                return null;
-              }
 
-              function updateGamepadBadge(connected, name) {
                 const badge = document.getElementById('gamepad-conn-badge');
                 const text = document.getElementById('gamepad-conn-text');
                 const notice = document.getElementById('controller-notice');
-
-                if (connected) {
-                  badge.classList.remove('disconnected');
-                  badge.classList.add('connected');
-                  text.textContent = name || 'Controller';
+                
+                if (connectedPad) {
+                  const padName = connectedPad.id.split('(')[0].trim() || 'Controller';
+                  if (badge) {
+                    badge.classList.remove('disconnected');
+                    badge.classList.add('connected');
+                    text.textContent = padName;
+                  }
                   if (notice) notice.style.display = 'none';
                 } else {
-                  badge.classList.remove('connected');
-                  badge.classList.add('disconnected');
-                  text.textContent = 'No Controller';
-                  if (notice) notice.style.display = '';
+                  if (badge) {
+                    badge.classList.remove('connected');
+                    badge.classList.add('disconnected');
+                    text.textContent = "No Controller";
+                  }
+                  if (notice) notice.style.display = 'block';
                 }
+                updateSchemeDisplay();
               }
 
-              window.addEventListener('gamepadconnected', (e) => {
-                const shortName = e.gamepad.id.split('(')[0].trim() || 'Controller';
-                updateGamepadBadge(true, shortName);
-              });
+              window.addEventListener("gamepadconnected", updateGamepadStatus);
+              window.addEventListener("gamepaddisconnected", updateGamepadStatus);
+              updateGamepadStatus();
 
-              window.addEventListener('gamepaddisconnected', (e) => {
-                updateGamepadBadge(false);
-              });
-
-              // Poll gamepad for live testing highlight
-              function pollGamepadForTest() {
-                const gp = getGamepad();
-                if (gp) {
-                  for (let i = 0; i < gp.buttons.length; i++) {
-                    const pressed = gp.buttons[i].pressed;
-                    const wasPrev = prevButtonStates[i] || false;
-
-                    if (pressed && !wasPrev) {
-                      const rows = findRowsForButton(i);
-                      rows.forEach(row => highlightKeyDown(row));
-                    } else if (!pressed && wasPrev) {
-                      const rows = findRowsForButton(i);
-                      rows.forEach(row => highlightKeyUp(row));
+              function updateGamepadLoop() {
+                const modal = document.getElementById('controls-modal');
+                if (modal.classList.contains('active')) {
+                  const gamepads = navigator.getGamepads();
+                  for (const gp of gamepads) {
+                    if (gp) {
+                      if (!gamepadState[gp.index]) gamepadState[gp.index] = { buttons: [] };
+                      gp.buttons.forEach((btn, index) => {
+                        const wasPressed = gamepadState[gp.index].buttons[index];
+                        if (btn.pressed) {
+                          const rows = document.querySelectorAll(`.scheme-table tr[data-buttons]`);
+                          rows.forEach(row => {
+                            if (row.getAttribute('data-buttons').split(',').includes(index.toString())) {
+                              if (!wasPressed) playFeedbackSound();
+                              highlightRow(row);
+                            }
+                          });
+                        }
+                        gamepadState[gp.index].buttons[index] = btn.pressed;
+                      });
                     }
-
-                    prevButtonStates[i] = pressed;
-                  }
-
-                  // Update badge if first time detecting
-                  const badge = document.getElementById('gamepad-conn-badge');
-                  if (badge && badge.classList.contains('disconnected')) {
-                    const shortName = gp.id.split('(')[0].trim() || 'Controller';
-                    updateGamepadBadge(true, shortName);
                   }
                 }
-
-                gamepadPollId = requestAnimationFrame(pollGamepadForTest);
+                requestAnimationFrame(updateGamepadLoop);
               }
+              updateGamepadLoop();
 
-              // Start gamepad polling for the live tester
-              pollGamepadForTest();
+              // ================================================
+              // PIN MODAL TOGGLE
+              // ================================================
+              const aboutPinDisplay = document.getElementById('about-pin-display');
+              const toggleAboutPinBtn = document.getElementById('toggle-about-pin');
+              const actualPin = "123Roy45";
+              let pinVisible = false;
 
-              // Check if gamepad already connected at load
-              const existingGp = getGamepad();
-              if (existingGp) {
-                const shortName = existingGp.id.split('(')[0].trim() || 'Controller';
-                updateGamepadBadge(true, shortName);
+              toggleAboutPinBtn.addEventListener('click', () => {
+                pinVisible = !pinVisible;
+                if (pinVisible) {
+                  aboutPinDisplay.textContent = actualPin;
+                  toggleAboutPinBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                } else {
+                  aboutPinDisplay.textContent = "••••••••";
+                  toggleAboutPinBtn.innerHTML = '<i class="fas fa-eye"></i>';
+                }
+              });
+
+              // ================================================
+              // MISC UI (Location, Time, Settings Dropdown)
+              // ================================================
+              function updateStatusBox() {
+                const networkStatus = document.getElementById('network-status');
+                const userTime = document.getElementById('user-time');
+                const userLocation = document.getElementById('user-location');
+
+                const updateOnlineStatus = () => {
+                  networkStatus.textContent = navigator.onLine ? 'Connected (Online)' : 'Disconnected (Offline)';
+                  networkStatus.className = navigator.onLine ? 'online' : 'offline';
+                };
+                window.addEventListener('online', updateOnlineStatus);
+                window.addEventListener('offline', updateOnlineStatus);
+                updateOnlineStatus();
+
+                const updateTime = () => {
+                  userTime.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                };
+                setInterval(updateTime, 1000);
+                updateTime();
+
+                try {
+                  userLocation.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                } catch (e) {
+                  userLocation.textContent = "Unknown Location";
+                }
               }
+              updateStatusBox();
+
+              const settingsBtn = document.getElementById('settings-toggle-btn');
+              const settingsDropdown = document.getElementById('settings-dropdown');
+              settingsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                settingsDropdown.classList.toggle('active');
+              });
+              document.addEventListener('click', (e) => {
+                if (!settingsDropdown.contains(e.target) && e.target !== settingsBtn) {
+                  settingsDropdown.classList.remove('active');
+                }
+              });
+
+              // Navigation for Add Game
+              document.getElementById('nav-add').addEventListener('click', (e) => {
+                e.preventDefault();
+                const panels = document.querySelectorAll('.glass-panel');
+                panels.forEach(panel => {
+                  if (panel.querySelector('span')?.textContent.includes('Add new game') || panel.querySelector('span')?.textContent.includes('Edit game')) {
+                    panel.scrollIntoView({ behavior: 'smooth' });
+                  }
+                });
+              });
             });
           </script>
 
@@ -1931,6 +2907,6 @@
     </div><!-- /app-layout -->
 
     <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>
-    <script type="module" src="src/launcher.js"></script>
+    <script type="module" src="src/launcher.js?v=2.0"></script>
   </body>
 </html>
