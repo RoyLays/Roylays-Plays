@@ -62,6 +62,6 @@ Plug in a USB or Bluetooth controller to play mobile classics like console games
 
 ## ⚙️ Under the Hood & Credits
 This project is a customized UI frontend built on top of amazing open-source technology:
-* Inspired by [zb3's fork of freej2me](https://github.com/zb3/freej2me-web).
+* Inspired by [zb3's freej2me](https://github.com/zb3/freej2me-web).
 * **Java Engine:** Runs using [CheerpJ](https://cheerpj.com/) to translate Java bytecode to WebAssembly in real-time.
 * **Graphics & Audio:** Features WebGL 2 for 3D support (M3G, Mascot Capsule v3), and compiled WebAssembly modules (`libmidi`, `libmedia`) for authentic classic mobile audio.
