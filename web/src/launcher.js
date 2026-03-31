@@ -523,6 +523,32 @@ async function main() {
         };
     }
 
+    // Mobile Add Game Redirection
+    const mobileAddGameBtn = document.getElementById('mobile-add-game-btn');
+    if (mobileAddGameBtn) {
+        mobileAddGameBtn.onclick = () => {
+            // Close modal
+            document.getElementById('mobile-sync-modal').classList.remove('active');
+            
+            // Switch to My Games tab
+            const gamesTab = document.querySelector('.mobile-nav-item[data-mobile-tab="games"]');
+            if (gamesTab) {
+                gamesTab.click();
+                
+                // Scroll to "Add new game" section after a short delay
+                setTimeout(() => {
+                    const panels = document.querySelectorAll('.glass-panel');
+                    panels.forEach(panel => {
+                        const title = panel.querySelector('span')?.textContent || "";
+                        if (title.includes('Add new game') || title.includes('Edit game')) {
+                            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    });
+                }, 300);
+            }
+        };
+    }
+
     // Mobile Import/Export Data
     const mobileImportBtn = document.getElementById('mobile-import-data-btn');
     const mobileExportBtn = document.getElementById('mobile-export-data-btn');
@@ -539,6 +565,46 @@ async function main() {
             document.getElementById('export-data-btn').click();
         };
     }
+
+    // Mobile Fullscreen Toggles
+    const toggleFS = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
+    const updateFSBtnText = (btnId) => {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        const span = btn.querySelector('span');
+        const icon = btn.querySelector('i');
+        if (document.fullscreenElement) {
+            if (span) span.textContent = 'Exit Fullscreen';
+            if (icon) icon.className = 'fas fa-compress';
+        } else {
+            if (span) span.textContent = 'Fullscreen';
+            if (icon) icon.className = 'fas fa-expand';
+        }
+    };
+
+    const mobileSyncFSBtn = document.getElementById('mobile-sync-fullscreen-btn');
+    if (mobileSyncFSBtn) {
+        mobileSyncFSBtn.onclick = toggleFS;
+    }
+
+    const mobileControlsFSBtn = document.getElementById('mobile-controls-fullscreen-btn');
+    if (mobileControlsFSBtn) {
+        mobileControlsFSBtn.onclick = toggleFS;
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        updateFSBtnText('mobile-sync-fullscreen-btn');
+        updateFSBtnText('mobile-controls-fullscreen-btn');
+    });
 
     // Sync Mobile Time
     const updateMobileTime = () => {

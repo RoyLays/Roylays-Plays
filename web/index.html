@@ -1966,12 +1966,64 @@
 
         body.mobile-mode-controls #controls-modal .pin-dialog-actions {
           display: flex !important; /* Show save button in mobile */
-          padding-bottom: 20px;
+          flex-direction: column;
+          gap: 12px;
+          padding-bottom: 40px;
         }
 
         body.mobile-mode-controls #controls-modal #controls-close-btn,
         body.mobile-mode-about #about-modal .pin-dialog-actions {
           display: none !important; /* Hide close buttons in inline mode */
+        }
+
+        #mobile-controls-fullscreen-btn {
+          display: flex !important; /* Show fullscreen btn in mobile controls */
+        }
+
+        /* Fix oval settings icon */
+        .mobile-icon-circle {
+          flex-shrink: 0;
+          width: 42px !important;
+          height: 42px !important;
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
+        }
+
+        /* Add space at bottom of My Games */
+        body.mobile-mode-home .glass-panel:last-of-type,
+        body.mobile-mode-games .glass-panel:last-of-type {
+          margin-bottom: 20px !important;
+        }
+
+        .mobile-scroll-end {
+          display: none;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          padding: 40px 0 140px;
+          color: var(--text-muted);
+          font-weight: 600;
+          font-size: 0.85em;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          width: 100%;
+        }
+
+        body.mobile-mode-games .mobile-scroll-end {
+          display: flex;
+        }
+
+        .scroll-end-icon {
+          font-size: 1.8em;
+          color: var(--accent-red);
+          animation: scrollEndBounce 2s infinite ease-in-out;
+        }
+
+        @keyframes scrollEndBounce {
+          0%, 100% { transform: translateY(0); opacity: 0.6; }
+          50% { transform: translateY(-8px); opacity: 1; }
         }
 
         /* Hide other content when in Controls or About mode */
@@ -2329,11 +2381,17 @@
           Saves & game progress stay in this browser (IndexedDB). Use Export Data for a backup file — clearing site data will erase them.
         </div>
         <div class="dropdown-actions" style="display: flex; flex-direction: column; gap: 12px;">
+          <button class="dropdown-btn" id="mobile-add-game-btn" style="width: 100%; padding: 14px; background: rgba(255, 0, 0, 0.15); border: 1px solid rgba(255, 0, 0, 0.3); border-radius: 12px; color: #ff4d4d; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;">
+            <i class="fas fa-plus-circle"></i> Add New Game
+          </button>
           <button class="dropdown-btn" id="mobile-import-data-btn" style="width: 100%; padding: 14px; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;">
             <i class="fas fa-file-import"></i> Import Data
           </button>
           <button class="dropdown-btn" id="mobile-export-data-btn" style="width: 100%; padding: 14px; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;">
             <i class="fas fa-file-export"></i> Export Data
+          </button>
+          <button class="dropdown-btn" id="mobile-sync-fullscreen-btn" style="width: 100%; padding: 14px; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;">
+            <i class="fas fa-expand"></i> <span>Fullscreen</span>
           </button>
         </div>
         <div class="pin-dialog-actions" style="margin-top: 24px;">
@@ -2598,7 +2656,6 @@
                 </div>
                 <div class="mobile-status-text">
                   <span class="mobile-status-label">Settings</span>
-                  <span class="mobile-status-value">Profile & Sync</span>
                 </div>
               </div>
               <div class="mobile-action-card" id="mobile-controls-btn">
@@ -2744,6 +2801,9 @@
 
               <div class="pin-dialog-actions" style="margin-top: 24px; gap: 12px; display: flex;">
                 <button id="controls-save-btn" class="pin-btn pin-btn-confirm" style="background: var(--accent-red); flex: 1;">Save Controls</button>
+                <button id="mobile-controls-fullscreen-btn" class="pin-btn" style="background: rgba(255,255,255,0.1); flex: 1; display: none; align-items: center; justify-content: center; gap: 8px;">
+                  <i class="fas fa-expand"></i> <span>Fullscreen</span>
+                </button>
                 <button id="controls-close-btn" class="pin-btn pin-btn-cancel" style="flex: 1;">Close</button>
               </div>
             </div>
@@ -2939,6 +2999,14 @@
               </div>
               <button class="save-button" id="add-save-button">Add game</button>
             </div>
+          </div>
+
+          <!-- Mobile Scroll End Footer -->
+          <div class="mobile-scroll-end">
+            <div class="scroll-end-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <span>Nothing More to Scroll</span>
           </div>
 
           <!-- Add Game Panel (hidden by default) -->
