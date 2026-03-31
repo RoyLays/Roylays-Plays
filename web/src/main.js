@@ -432,9 +432,17 @@ function setListeners() {
     keyRepeatManager.register((kind, key, args) => {
         if (kind === 'click') {
             if (key === 'Maximize') {
-                fractionScale = !fractionScale;
-                localStorage && localStorage.setItem("pl.zb3.freej2me.fractionScale", fractionScale);
-                autoscale();
+                const fullscreenBtn = document.getElementById('fullscreen-btn');
+                if (fullscreenBtn) {
+                    fullscreenBtn.click();
+                } else {
+                    // Fallback if button doesn't exist
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        document.documentElement.requestFullscreen();
+                    }
+                }
             }
         } else if (activeCodeMap[key]) {
             evtQueue.queueEvent({

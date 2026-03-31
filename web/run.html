@@ -759,26 +759,50 @@
 
         /* In landscape mode on mobile, ensure keys are not blocked */
         body.kbd-landscape #screen-area {
-            left: clamp(140px, 18vw, 220px);
-            right: clamp(140px, 18vw, 220px);
+            left: clamp(160px, 22vw, 260px);
+            right: clamp(160px, 22vw, 260px);
+            background: black; /* Solid background for game area */
         }
 
         body.kbd-landscape #left-keys,
         body.kbd-landscape #right-keys {
-            width: clamp(140px, 18vw, 220px);
-            background: rgba(10, 10, 10, 0.85); /* Slightly transparent background for modern look */
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 150; /* Above the game area if needed */
+            width: clamp(160px, 22vw, 260px);
+            background: rgba(15, 15, 15, 0.95); /* Even more opaque */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 150; 
+            padding: 8px; 
+            border-color: rgba(255, 255, 255, 0.1);
         }
         
-        /* Smaller font size for keys in mobile landscape */
+        /* Prominent Maximize button in mobile landscape */
+        body.kbd-landscape .key[data-key="Maximize"] {
+            background: var(--accent-red-dim);
+            color: var(--accent-red);
+            border-color: var(--accent-red);
+            font-size: 1.4em;
+        }
+
+        /* Hide the top floating fullscreen button on small screens to avoid clutter */
+        @media (max-width: 768px) {
+            .fullscreen-btn {
+                display: none !important;
+            }
+        }
+        
+        /* Larger buttons in mobile landscape */
         body.kbd-landscape .key {
-            font-size: 1.1em;
+            font-size: 1.25em;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
         }
         
         body.kbd-landscape .arrow-key {
-            font-size: 1.4em;
+            font-size: 1.6em;
+        }
+
+        body.kbd-landscape .key-grid {
+            gap: 8px; /* More space between buttons */
         }
     }
 
