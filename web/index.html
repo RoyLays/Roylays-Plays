@@ -2010,6 +2010,68 @@
         cursor: not-allowed;
       }
 
+      /* ===== FULLSCREEN DIALOG ===== */
+      #fs-recommendation-modal .pin-dialog {
+        max-width: 400px;
+        padding: 32px 24px;
+      }
+
+      .fs-greeting {
+        font-size: 1.5em;
+        font-weight: 800;
+        margin-bottom: 12px;
+        color: white;
+        letter-spacing: -0.5px;
+      }
+
+      .fs-message {
+        font-size: 0.95em;
+        color: var(--text-secondary);
+        margin-bottom: 32px;
+        line-height: 1.5;
+      }
+
+      .fs-actions {
+        display: flex;
+        gap: 16px;
+      }
+
+      .fs-btn {
+        flex: 1;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95em;
+        cursor: pointer;
+        transition: all var(--transition);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .fs-btn-no {
+        background: #333;
+        color: var(--text-secondary);
+      }
+
+      .fs-btn-no:hover {
+        background: #444;
+        color: white;
+      }
+
+      .fs-btn-yes {
+        background: #2ecc71;
+        color: white;
+        box-shadow: 0 8px 20px rgba(46, 204, 113, 0.3);
+      }
+
+      .fs-btn-yes:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(46, 204, 113, 0.4);
+      }
+
       /* ===== RESPONSIVE ===== */
       @media (max-width: 1024px) {
         .content-area {
@@ -2292,6 +2354,20 @@
         <div class="pin-dialog-actions">
           <button id="pin-cancel-btn" class="pin-btn pin-btn-cancel">Cancel</button>
           <button id="pin-confirm-btn" class="pin-btn pin-btn-confirm">Unlock</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fullscreen Recommendation Dialog -->
+    <div id="fs-recommendation-modal" class="modal-overlay">
+      <div class="pin-dialog">
+        <div class="fs-greeting" id="fs-greeting">Good Morning</div>
+        <div class="fs-message">We Recomend Fullscreen Better Experience S</div>
+        <div class="fs-actions">
+          <button class="fs-btn fs-btn-no" id="fs-btn-no">No</button>
+          <button class="fs-btn fs-btn-yes" id="fs-btn-yes">
+            <i class="fas fa-expand"></i> Yes!
+          </button>
         </div>
       </div>
     </div>

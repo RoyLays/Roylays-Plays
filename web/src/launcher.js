@@ -359,6 +359,46 @@ async function setupBackgroundMusic() {
     loadSong(currentSongIndex);
 }
 
+async function handleFullscreenRecommendation() {
+    const modal = document.getElementById('fs-recommendation-modal');
+    const greetingEl = document.getElementById('fs-greeting');
+    const yesBtn = document.getElementById('fs-btn-yes');
+    const noBtn = document.getElementById('fs-btn-no');
+    
+    if (!modal || !greetingEl || !yesBtn || !noBtn) return;
+
+    // Set greeting based on time
+    const hour = new Date().getHours();
+    let greeting = "Good Morning";
+    if (hour >= 12 && hour < 17) greeting = "Good Afternoon";
+    else if (hour >= 17 && hour < 21) greeting = "Good Evening";
+    else if (hour >= 21 || hour < 5) greeting = "Good Night";
+    
+    greetingEl.textContent = greeting;
+
+    // Show modal
+    modal.classList.add('active');
+
+    const closeFSModal = () => {
+        modal.classList.remove('active');
+    };
+
+    yesBtn.onclick = () => {
+        const docEl = document.documentElement;
+        const requestFullscreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+        if (requestFullscreen) {
+            requestFullscreen.call(docEl).catch(err => {
+                console.log("Fullscreen request failed:", err);
+            });
+        }
+        closeFSModal();
+    };
+
+    noBtn.onclick = () => {
+        closeFSModal();
+    };
+}
+
 async function main() {
     setupBackgroundMusic();
     document.getElementById("loading-status").textContent = "Preparing engine...";
@@ -383,6 +423,9 @@ async function main() {
 
     document.getElementById("loading").style.display = "none";
     document.getElementById("main").style.display = "";
+
+    // Trigger fullscreen recommendation dialog
+    handleFullscreenRecommendation();
 
     document.getElementById("clear-current").onclick = setupAddMode;
 
