@@ -18,7 +18,7 @@ import midiBridgeNatives from "../libjs/libmidibridge.js";
 const evtQueue = new EventQueue();
 const sp = new URLSearchParams(location.search);
 
-const cheerpjWebRoot = '/app'+location.pathname.replace(/\/[^/]*$/,'');
+const cheerpjWebRoot = '/app' + location.pathname.replace(/\/[^/]*$/, '');
 
 let isMobile = sp.get('mobile');
 
@@ -41,7 +41,29 @@ let screenCtx = null;
 let fractionScale = sp.get('fractionScale') || (localStorage && localStorage.getItem("pl.zb3.freej2me.fractionScale") === "true");
 let scaleSet = false;
 
+const isFerrariGT3 = sp.get('app') === 'ferrarigt3';
+
 const keyRepeatManager = new KeyRepeatManager();
+
+function getRotatedCoords(x, y) {
+    if (!isFerrariGT3) return { x, y };
+
+    // For -90deg rotation on a vertical canvas (W x H)
+    // The visual Width = Canvas H, visual Height = Canvas W
+    // New X = Y
+    // New Y = Canvas H - X
+
+    const cw = screenCtx.canvas.width;
+    const ch = screenCtx.canvas.height;
+
+    // Invert the rotation mapping for events
+    // Visual (vx, vy) -> Canvas (cx, cy)
+    // If we rotated -90deg (CCW), we map back 90deg (CW)
+    return {
+        x: y,
+        y: ch - x
+    };
+}
 
 window.evtQueue = evtQueue;
 
@@ -50,6 +72,32 @@ function autoscale() {
 
     let screenWidth = window.innerWidth;
     let screenHeight = window.innerHeight;
+
+    // === Special cases: Ferrari GT 3 etc. (Horizontal orientation) ===
+    if (isFerrariGT3) {
+        // Ferrari GT 3 specifically needs 800x480 for full display
+        const targetWidth = 800;
+        const targetHeight = 480;
+
+        let scale = Math.min(
+            screenWidth / targetWidth,
+            screenHeight / targetHeight
+        );
+
+        if (!fractionScale) {
+            scale = scale | 0;
+        }
+
+        display.style.zoom = scale;
+        // Correct centering for -90deg rotation
+        display.style.position = 'absolute';
+        display.style.left = '50%';
+        display.style.top = '50%';
+        // The display's visual center needs to be the screen center.
+        display.style.transform = `translate(-50%, -50%) rotate(-90deg)`;
+        display.style.transformOrigin = 'center';
+        return;
+    }
 
     // === Portrait mode: keypad driven by CSS media query ===
     const portraitKbd = document.getElementById('portrait-keypad');
@@ -175,7 +223,7 @@ function setListeners() {
     // Background Music Pin System
     const setupPinnedMusic = () => {
         const isPinned = localStorage.getItem('music_pinned') === 'true';
-        
+
         // Always load the playlist so we can control it via the sidebar even if not pinned
         const playlist = [
             { src: 'assets/bg_music.mp3', title: 'Shounen ki', artist: 'negimaavni', bg: 'url("assets/music_bg.jpg")' },
@@ -203,17 +251,33 @@ function setListeners() {
         const progressPath = document.querySelector('.music-progress-path');
         const playPauseBtn = document.getElementById('music-play-pause');
 
+        // Mobile music card elements (portrait mode)
+        const mobileCard = document.getElementById('mobile-music-card');
+        const mobileMusicTitle = document.getElementById('mobile-music-title');
+        const mobileMusicArtist = document.getElementById('mobile-music-artist');
+        const mobileMusicCover = document.getElementById('mobile-music-cover');
+        const mobileMusicPlayPause = document.getElementById('mobile-music-play-pause');
+        const mobileMusicPrev = document.getElementById('mobile-music-prev');
+        const mobileMusicNext = document.getElementById('mobile-music-next');
+        const mobileProgressPath = document.getElementById('mobile-music-progress-path');
+
         const loadSong = (index, shouldPlay = true) => {
             const song = playlist[index];
             // Only update src if it's different to avoid resetting currentTime on initial load
             if (!audio.src.endsWith(song.src)) {
                 audio.src = song.src;
             }
+            // Desktop sidebar
             musicTitle.textContent = song.title;
             musicArtist.textContent = song.artist;
             musicBox.style.setProperty('--music-bg', song.bg);
+            // Mobile card
+            if (mobileMusicTitle) mobileMusicTitle.textContent = song.title;
+            if (mobileMusicArtist) mobileMusicArtist.textContent = song.artist;
+            if (mobileCard) mobileCard.style.setProperty('--music-bg', song.bg);
+            if (mobileMusicCover) mobileMusicCover.style.background = `${song.bg} center/cover no-repeat`;
             if (shouldPlay) {
-                audio.play().catch(() => {});
+                audio.play().catch(() => { });
                 isPlaying = true;
             } else {
                 audio.pause();
@@ -223,7 +287,9 @@ function setListeners() {
         };
 
         const updatePlayBtn = () => {
-            playPauseBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+            const iconHtml = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+            playPauseBtn.innerHTML = iconHtml;
+            if (mobileMusicPlayPause) mobileMusicPlayPause.innerHTML = iconHtml;
             // Save state to localStorage for persistence
             if (isPinned) {
                 localStorage.setItem('music_state', JSON.stringify({
@@ -239,7 +305,7 @@ function setListeners() {
 
         playPauseBtn.onclick = () => {
             if (isPlaying) audio.pause();
-            else audio.play().catch(() => {});
+            else audio.play().catch(() => { });
             isPlaying = !isPlaying;
             updatePlayBtn();
         };
@@ -254,26 +320,63 @@ function setListeners() {
             loadSong(currentSongIndex);
         };
 
+        // Mobile card controls — share same audio/state
+        if (mobileMusicPlayPause) {
+            mobileMusicPlayPause.onclick = () => {
+                if (isPlaying) audio.pause();
+                else audio.play().catch(() => { });
+                isPlaying = !isPlaying;
+                updatePlayBtn();
+            };
+        }
+        if (mobileMusicNext) mobileMusicNext.onclick = () => {
+            currentSongIndex = (currentSongIndex + 1) % playlist.length;
+            loadSong(currentSongIndex);
+        };
+        if (mobileMusicPrev) mobileMusicPrev.onclick = () => {
+            currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
+            loadSong(currentSongIndex);
+        };
+
         audio.onended = () => {
             currentSongIndex = (currentSongIndex + 1) % playlist.length;
             loadSong(currentSongIndex);
         };
 
-        // Progress ring logic
+        // Progress ring logic — desktop sidebar + mobile card
         const updateProgress = () => {
+            const frac = audio.duration ? audio.currentTime / audio.duration : 0;
+
+            // Desktop SVG ring
             if (progressPath && audio.duration) {
                 const width = musicBox.offsetWidth;
                 const height = musicBox.offsetHeight;
                 if (width > 0) {
                     const r = 24, inset = 2.5;
                     const w = width - 2 * inset, h = height - 2 * inset, cx = w / 2;
-                    const d = `M ${cx+inset},${inset} L ${w-r+inset},${inset} A ${r},${r} 0 0 1 ${w+inset},${r+inset} L ${w+inset},${h-r+inset} A ${r},${r} 0 0 1 ${w-r+inset},${h+inset} L ${r+inset},${h+inset} A ${r},${r} 0 0 1 ${inset},${h-r+inset} L ${inset},${r+inset} A ${r},${r} 0 0 1 ${r+inset},${inset} L ${cx+inset},${inset} Z`;
+                    const d = `M ${cx + inset},${inset} L ${w - r + inset},${inset} A ${r},${r} 0 0 1 ${w + inset},${r + inset} L ${w + inset},${h - r + inset} A ${r},${r} 0 0 1 ${w - r + inset},${h + inset} L ${r + inset},${h + inset} A ${r},${r} 0 0 1 ${inset},${h - r + inset} L ${inset},${r + inset} A ${r},${r} 0 0 1 ${r + inset},${inset} L ${cx + inset},${inset} Z`;
                     progressPath.setAttribute('d', d);
                     const length = progressPath.getTotalLength();
                     progressPath.style.strokeDasharray = length;
-                    progressPath.style.strokeDashoffset = length * (1 - (audio.currentTime / audio.duration));
+                    progressPath.style.strokeDashoffset = length * (1 - frac);
                 }
             }
+
+            // Mobile card SVG ring (same perimeter path, different box size)
+            if (mobileProgressPath && mobileCard && audio.duration) {
+                const width = mobileCard.offsetWidth;
+                const height = mobileCard.offsetHeight;
+                if (width > 0) {
+                    const r = 20, inset = 2.5;
+                    const w = width - 2 * inset, h = height - 2 * inset, cx = w / 2;
+                    const d = `M ${cx + inset},${inset} L ${w - r + inset},${inset} A ${r},${r} 0 0 1 ${w + inset},${r + inset} L ${w + inset},${h - r + inset} A ${r},${r} 0 0 1 ${w - r + inset},${h + inset} L ${r + inset},${h + inset} A ${r},${r} 0 0 1 ${inset},${h - r + inset} L ${inset},${r + inset} A ${r},${r} 0 0 1 ${r + inset},${inset} L ${cx + inset},${inset} Z`;
+                    mobileProgressPath.setAttribute('d', d);
+                    const length = mobileProgressPath.getTotalLength();
+                    mobileProgressPath.style.strokeDasharray = length;
+                    mobileProgressPath.style.strokeDashoffset = length * (1 - frac);
+                }
+            }
+
             requestAnimationFrame(updateProgress);
         };
         updateProgress();
@@ -290,7 +393,7 @@ function setListeners() {
 
     setKbdHandler((isDown, key) => {
         const symbol = key.startsWith('Digit') ? key.substring(5) : '\x00';
-        keyRepeatManager.post(isDown, key, {symbol, ctrlKey: false, shiftKey: false});
+        keyRepeatManager.post(isDown, key, { symbol, ctrlKey: false, shiftKey: false });
     });
 
     function releaseAllHeldKeys() {
@@ -386,10 +489,15 @@ function setListeners() {
         display.focus();
         if (noMouse) return;
 
+        const coords = getRotatedCoords(
+            e.offsetX / display.currentCSSZoom | 0,
+            e.offsetY / display.currentCSSZoom | 0
+        );
+
         evtQueue.queueEvent({
             kind: 'pointerpressed',
-            x: e.offsetX / display.currentCSSZoom | 0,
-            y: e.offsetY / display.currentCSSZoom | 0,
+            x: coords.x,
+            y: coords.y,
         });
 
         mouseDown = true;
@@ -401,10 +509,15 @@ function setListeners() {
         if (noMouse) return;
         if (!mouseDown) return;
 
+        const coords = getRotatedCoords(
+            e.offsetX / display.currentCSSZoom | 0,
+            e.offsetY / display.currentCSSZoom | 0
+        );
+
         evtQueue.queueEvent({
             kind: 'pointerdragged',
-            x: e.offsetX / display.currentCSSZoom | 0,
-            y: e.offsetY / display.currentCSSZoom | 0,
+            x: coords.x,
+            y: coords.y,
         });
 
         e.preventDefault();
@@ -417,10 +530,15 @@ function setListeners() {
 
         mouseDown = false;
 
+        const coords = getRotatedCoords(
+            (e.pageX - display.offsetLeft) / display.currentCSSZoom | 0,
+            (e.pageY - display.offsetTop) / display.currentCSSZoom | 0
+        );
+
         evtQueue.queueEvent({
             kind: 'pointerreleased',
-            x: (e.pageX - display.offsetLeft) / display.currentCSSZoom | 0,
-            y: (e.pageY - display.offsetTop) / display.currentCSSZoom | 0,
+            x: coords.x,
+            y: coords.y,
         });
 
         e.preventDefault();
@@ -431,34 +549,49 @@ function setListeners() {
         display.focus();
         noMouse = true;
 
+        const coords = getRotatedCoords(
+            (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
+            (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0
+        );
+
         evtQueue.queueEvent({
             kind: 'pointerpressed',
-            x: (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
-            y: (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0,
+            x: coords.x,
+            y: coords.y,
         });
 
         e.preventDefault();
-    }, {passive: false});
+    }, { passive: false });
 
     display.addEventListener('touchmove', async e => {
         noMouse = true;
 
+        const coords = getRotatedCoords(
+            (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
+            (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0
+        );
+
         evtQueue.queueEvent({
             kind: 'pointerdragged',
-            x: (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
-            y: (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0,
+            x: coords.x,
+            y: coords.y,
         });
 
         e.preventDefault();
-    }, {passive: false});
+    }, { passive: false });
 
     display.addEventListener('touchend', async e => {
         noMouse = true;
 
+        const coords = getRotatedCoords(
+            (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
+            (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0
+        );
+
         evtQueue.queueEvent({
             kind: 'pointerreleased',
-            x: (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
-            y: (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0,
+            x: coords.x,
+            y: coords.y,
         });
 
         e.preventDefault();
@@ -508,7 +641,7 @@ function setFaviconFromBuffer(arrayBuffer) {
     const blob = new Blob([arrayBuffer], { type: 'image/png' });
 
     const reader = new FileReader();
-    reader.onload = function() {
+    reader.onload = function () {
         const dataURL = reader.result;
 
         let link = document.querySelector("link[rel*='icon']");
@@ -593,7 +726,7 @@ async function init() {
     window.libmidi = new LibMidi(createUnlockingAudioContext());
     await window.libmidi.init();
     window.libmidi.midiPlayer.addEventListener('end-of-media', e => {
-        window.evtQueue.queueEvent({kind: 'player-eom', player: e.target});
+        window.evtQueue.queueEvent({ kind: 'player-eom', player: e.target });
     })
     window.libmedia = new LibMedia();
 
@@ -624,8 +757,15 @@ async function init() {
                     scaleSet = true;
                     display.focus();
                 }
-                screenCtx.canvas.width = width;
-                screenCtx.canvas.height = height;
+
+                // For Ferrari GT 3, we force the canvas to its preferred resolution
+                if (isFerrariGT3) {
+                    screenCtx.canvas.width = 480; // Swapped because of -90deg rotation
+                    screenCtx.canvas.height = 800;
+                } else {
+                    screenCtx.canvas.width = width;
+                    screenCtx.canvas.height = height;
+                }
                 autoscale();
             },
             async Java_pl_zb3_freej2me_bridge_shell_Shell_waitForAndDispatchEvents(lib, listener) {
@@ -673,7 +813,7 @@ async function init() {
 
     document.getElementById("loading-status").textContent = "Starting game...";
 
-    const lib = await cheerpjRunLibrary(cheerpjWebRoot+"/freej2me-web.jar");
+    const lib = await cheerpjRunLibrary(cheerpjWebRoot + "/freej2me-web.jar");
 
     const homeLink = document.querySelector(".brand-overlay");
     if (homeLink) {
@@ -685,7 +825,7 @@ async function init() {
     }
 
     window.addEventListener("pagehide", () => {
-        flushExitBackup(lib).catch(() => {});
+        flushExitBackup(lib).catch(() => { });
     });
 
     document.addEventListener("visibilitychange", () => {
@@ -693,7 +833,7 @@ async function init() {
         const now = Date.now();
         if (now - lastBackgroundFlush < 30000) return;
         lastBackgroundFlush = now;
-        flushExitBackup(lib).catch(() => {});
+        flushExitBackup(lib).catch(() => { });
     });
 
     const FreeJ2ME = await lib.org.recompile.freej2me.FreeJ2ME;
@@ -706,7 +846,7 @@ async function init() {
 
         args = ['app', sp.get('app')];
     } else {
-        args = ['jar', cheerpjWebRoot+"/jar/" + (sp.get('jar') || "game.jar")];
+        args = ['jar', cheerpjWebRoot + "/jar/" + (sp.get('jar') || "game.jar")];
     }
 
     FreeJ2ME.main(args).catch(e => {

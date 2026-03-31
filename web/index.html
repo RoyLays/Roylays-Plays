@@ -1098,7 +1098,7 @@
         background: rgba(0, 0, 0, 0.85);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
-        display: flex;
+        display: none; /* Changed from flex to none */
         align-items: center;
         justify-content: center;
         z-index: 10000;
@@ -1108,6 +1108,7 @@
       }
 
       .modal-overlay.active {
+        display: flex; /* Show when active */
         opacity: 1;
         pointer-events: all;
       }
@@ -1540,9 +1541,452 @@
         opacity: 0.15;
       }
 
-      /* ===== SCROLLBAR ===== */
-      ::-webkit-scrollbar {
-        width: 6px;
+      /* ===== MOBILE NAVIGATION BAR ===== */
+      .mobile-nav {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 65px;
+        background: rgba(20, 20, 20, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid var(--glass-border);
+        z-index: 1000;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0 10px;
+      }
+
+      .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.7em;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all var(--transition);
+        background: none;
+        border: none;
+        cursor: pointer;
+        flex: 1;
+      }
+
+      .mobile-nav-item i {
+        font-size: 1.4em;
+      }
+
+      .mobile-nav-item.active {
+        color: var(--accent-red);
+      }
+
+      .mobile-nav-item.active i {
+        transform: translateY(-2px);
+        filter: drop-shadow(0 0 8px var(--accent-red-glow));
+      }
+
+      .mobile-app-grid {
+        display: none;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 24px 12px;
+        padding: 20px 15px 120px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .mobile-app-icon-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: var(--text-primary);
+        width: 100%;
+        min-width: 0; /* Important for ellipsis */
+      }
+
+      .mobile-app-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative; /* For heart indicator */
+        overflow: visible; /* Allow heart to pop out slightly */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease;
+      }
+
+      .mobile-app-favorite {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        width: 20px;
+        height: 20px;
+        background: #ff2d55;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.6em;
+        box-shadow: 0 2px 6px rgba(255, 45, 85, 0.4);
+        border: 2px solid #1a1a1a;
+        z-index: 2;
+      }
+
+      .mobile-app-icon:active {
+        transform: scale(0.92);
+      }
+
+      .mobile-app-icon img {
+        width: 42px;
+        height: 42px;
+        object-fit: contain;
+        image-rendering: pixelated;
+      }
+
+      .mobile-app-name {
+        font-size: 0.7em;
+        font-weight: 600;
+        text-align: center;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+        padding: 0 2px;
+      }
+
+      /* ===== MOBILE WIDGETS AREA ===== */
+      .mobile-widgets-container {
+        display: none;
+        flex-direction: column;
+        gap: 16px;
+        padding: 20px;
+        width: 100%;
+        margin-top: 20px;
+      }
+
+      body.mobile-mode-home .mobile-widgets-container {
+        display: flex;
+      }
+
+      .mobile-info-widget {
+        background: var(--glass-elevated);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      .mobile-big-time {
+        font-size: 3.5em;
+        font-weight: 800;
+        color: white;
+        line-height: 1;
+        margin-bottom: 10px;
+        letter-spacing: -1px;
+      }
+
+      .mobile-info-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.9em;
+        color: var(--text-secondary);
+      }
+
+      .mobile-info-row i {
+        color: var(--accent-red);
+        width: 20px;
+        text-align: center;
+      }
+
+      /* Mobile Music Widget (Rectangular format) */
+      .mobile-music-widget {
+        width: 100%;
+        height: auto;
+        min-height: 120px;
+        border-radius: 28px;
+        overflow: hidden;
+        position: relative;
+        display: grid;
+        grid-template-columns: 80px 1fr;
+        grid-template-rows: auto auto;
+        gap: 4px 16px;
+        padding: 16px 20px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        margin: 0;
+        align-items: center;
+      }
+
+      .mobile-music-widget .music-top {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 4px;
+      }
+
+      .mobile-music-widget .music-pin-btn {
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 24px;
+        height: 24px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.7em;
+      }
+
+      .mobile-music-widget .music-cast-icon {
+        font-size: 1.1em;
+        opacity: 0.8;
+      }
+
+      .mobile-music-widget .music-cover {
+        grid-row: 2;
+        grid-column: 1;
+        width: 80px;
+        height: 80px;
+        border-radius: 16px;
+        margin-bottom: 0;
+      }
+
+      .mobile-music-widget .music-info {
+        grid-row: 2;
+        grid-column: 2;
+        margin-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .mobile-music-widget .music-title {
+        font-size: 1.1em;
+        font-weight: 800;
+        color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 180px;
+      }
+
+      .mobile-music-widget .music-artist {
+        font-size: 0.85em;
+        color: rgba(255, 255, 255, 0.6);
+        margin-top: 2px;
+      }
+
+      /* Mobile Music Progress Bar */
+      .mobile-music-progress-container {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        margin-top: 12px;
+        overflow: hidden;
+      }
+
+      .mobile-music-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: var(--accent-red);
+        box-shadow: 0 0 10px var(--accent-red-glow);
+        transition: width 0.2s linear;
+      }
+
+      .mobile-music-widget .music-controls {
+        grid-row: 3;
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 32px;
+        width: 100%;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: none; /* Removed thin line */
+      }
+
+      .mobile-music-widget .music-btn {
+        font-size: 1.1em;
+        opacity: 0.6;
+      }
+
+      .mobile-music-widget .music-btn.play-pause {
+        font-size: 1.8em;
+        opacity: 1;
+      }
+
+      .mobile-music-widget::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--music-bg) center/cover no-repeat;
+        filter: blur(8px);
+        opacity: 0.6;
+        z-index: -1;
+      }
+
+      /* Bottom Quick Actions & Controls */
+      .mobile-quick-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .mobile-action-card {
+        background: var(--glass-elevated);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .mobile-icon-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-primary);
+      }
+
+      .mobile-status-text {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .mobile-status-label {
+        font-size: 0.65em;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+
+      .mobile-status-value {
+        font-size: 0.85em;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 768px) {
+        /* Hide Desktop Elements */
+        .sidebar, .topbar {
+          display: none !important;
+        }
+
+        .mobile-nav {
+          display: flex;
+        }
+
+        .app-layout {
+          flex-direction: column;
+        }
+
+        .main-area {
+          height: 100vh;
+        }
+
+        .content-area {
+          padding: 10px;
+          padding-top: 20px;
+        }
+
+        /* Show mobile grid if Home is active */
+        body.mobile-mode-home .mobile-app-grid {
+          display: grid;
+        }
+
+        .mobile-app-grid {
+          padding: 20px 15px 120px;
+          gap: 24px 12px;
+        }
+
+        /* Hide desktop grids in mobile mode */
+        body.mobile-mode-home .game-cards-grid,
+        body.mobile-mode-home .section-title,
+        body.mobile-mode-home .glass-panel,
+        body.mobile-mode-home .sidebar .sidebar-music-player {
+          display: none;
+        }
+
+        /* Controls and About inline for mobile */
+        body.mobile-mode-controls #controls-modal,
+        body.mobile-mode-about #about-modal {
+          display: block !important;
+          position: static;
+          background: transparent;
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+          padding: 0;
+          z-index: 1;
+          opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
+        }
+
+        body.mobile-mode-controls #controls-modal .pin-dialog,
+        body.mobile-mode-about #about-modal .pin-dialog {
+          max-width: 100% !important;
+          background: transparent;
+          border: none;
+          box-shadow: none;
+          padding: 10px 10px 100px !important; /* Space for bottom nav */
+          transform: none;
+          animation: none;
+        }
+
+        body.mobile-mode-controls #controls-modal .pin-dialog-actions {
+          display: flex !important; /* Show save button in mobile */
+          padding-bottom: 20px;
+        }
+
+        body.mobile-mode-controls #controls-modal #controls-close-btn,
+        body.mobile-mode-about #about-modal .pin-dialog-actions {
+          display: none !important; /* Hide close buttons in inline mode */
+        }
+
+        /* Hide other content when in Controls or About mode */
+        body.mobile-mode-controls .content-area > *:not(#controls-modal),
+        body.mobile-mode-about .content-area > *:not(#about-modal) {
+          display: none !important;
+        }
+
+        /* Ensure content area takes full height for scrolling */
+        body.mobile-mode-controls .content-area,
+        body.mobile-mode-about .content-area {
+          display: block;
+          height: 100%;
+          overflow-y: auto;
+        }
       }
 
       ::-webkit-scrollbar-track {
@@ -1810,6 +2254,32 @@
       }
     </style>
 
+    <div id="mobile-sync-modal" class="modal-overlay">
+      <div class="pin-dialog" style="max-width: 400px; text-align: left; padding: 24px;">
+        <div class="glass-panel-header" style="margin-bottom: 20px;">
+          <div class="glass-panel-title">
+            <i class="fas fa-sync"></i>
+            <span>Profile & Sync</span>
+          </div>
+        </div>
+        <div class="dropdown-info-box" style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px; font-size: 0.85em; color: var(--text-secondary); line-height: 1.5; border: 1px solid var(--glass-border); margin-bottom: 20px;">
+          <i class="fas fa-save" style="margin-right: 8px; color: var(--accent-red);"></i>
+          Saves & game progress stay in this browser (IndexedDB). Use Export Data for a backup file — clearing site data will erase them.
+        </div>
+        <div class="dropdown-actions" style="display: flex; flex-direction: column; gap: 12px;">
+          <button class="dropdown-btn" id="mobile-import-data-btn" style="width: 100%; padding: 14px; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;">
+            <i class="fas fa-file-import"></i> Import Data
+          </button>
+          <button class="dropdown-btn" id="mobile-export-data-btn" style="width: 100%; padding: 14px; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;">
+            <i class="fas fa-file-export"></i> Export Data
+          </button>
+        </div>
+        <div class="pin-dialog-actions" style="margin-top: 24px;">
+          <button id="mobile-sync-close-btn" class="pin-btn pin-btn-cancel" style="width: 100%;">Close</button>
+        </div>
+      </div>
+    </div>
+
     <div id="pin-modal" class="modal-overlay">
       <div class="pin-dialog">
         <h2>Access PIN Required</h2>
@@ -1822,183 +2292,6 @@
         <div class="pin-dialog-actions">
           <button id="pin-cancel-btn" class="pin-btn pin-btn-cancel">Cancel</button>
           <button id="pin-confirm-btn" class="pin-btn pin-btn-confirm">Unlock</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="controls-modal" class="modal-overlay">
-      <div class="pin-dialog" style="max-width: 600px; text-align: left; padding: 24px;">
-        <div class="glass-panel-header" style="margin-bottom: 20px;">
-          <div class="glass-panel-title">
-            <i class="fas fa-sliders-h"></i>
-            <span>Controls & Peripherals</span>
-          </div>
-          <div class="live-test-badge" id="live-test-badge">
-            <span class="live-dot"></span> LIVE TEST
-          </div>
-        </div>
-
-        <!-- Control Scheme Selector Tabs -->
-        <div class="control-tabs" id="control-tabs">
-          <button class="control-tab active" data-scheme="classical">
-            <i class="fas fa-keyboard"></i> Classical
-          </button>
-          <button class="control-tab" data-scheme="modern">
-            <i class="fas fa-mouse-pointer"></i> Modern
-          </button>
-          <button class="control-tab" data-scheme="pro">
-            <i class="fas fa-gamepad"></i> Pro
-          </button>
-        </div>
-
-        <!-- Classical Scheme -->
-        <div class="control-scheme-panel active" id="scheme-classical">
-          <div class="scheme-card">
-            <div class="scheme-header">
-              <div class="scheme-icon">🎹</div>
-              <div>
-                <div class="scheme-name">Classical Controls</div>
-                <div class="scheme-desc">Traditional keyboard layout — arrow keys + number pad</div>
-              </div>
-              <div class="connection-badges">
-                <span class="conn-badge connected"><i class="fas fa-keyboard"></i> Keyboard</span>
-              </div>
-            </div>
-            <div class="test-hint">
-              <i class="fas fa-hand-pointer"></i>
-              Press any key to test — matching control will light up
-            </div>
-            <table class="scheme-table">
-              <tr data-keys="ArrowUp,ArrowDown,ArrowLeft,ArrowRight"><td><span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span></td><td>Movement</td></tr>
-              <tr data-keys="Enter"><td><span class="key">⏎ Enter</span></td><td>Action / OK</td></tr>
-              <tr data-keys="Escape"><td><span class="key">Esc</span></td><td>Emulator options</td></tr>
-              <tr data-keys="F1,KeyQ"><td><span class="key">F1</span> / <span class="key">Q</span></td><td>Left soft key</td></tr>
-              <tr data-keys="F2,KeyW"><td><span class="key">F2</span> / <span class="key">W</span></td><td>Right soft key</td></tr>
-              <tr data-keys="Digit0,Digit1,Digit2,Digit3,Digit4,Digit5,Digit6,Digit7,Digit8,Digit9"><td><span class="key">0</span> – <span class="key">9</span></td><td>Keypad numbers</td></tr>
-              <tr data-keys="KeyE"><td><span class="key">E</span></td><td>* key</td></tr>
-              <tr data-keys="KeyR"><td><span class="key">R</span></td><td># key</td></tr>
-            </table>
-          </div>
-        </div>
-
-        <!-- Modern Scheme -->
-        <div class="control-scheme-panel" id="scheme-modern">
-          <div class="scheme-card">
-            <div class="scheme-header">
-              <div class="scheme-icon">🖱️</div>
-              <div>
-                <div class="scheme-name">Modern Controls</div>
-                <div class="scheme-desc">WASD + Mouse — familiar FPS-style layout</div>
-              </div>
-              <div class="connection-badges">
-                <span class="conn-badge connected"><i class="fas fa-keyboard"></i> Keyboard</span>
-                <span class="conn-badge connected"><i class="fas fa-mouse"></i> Mouse</span>
-              </div>
-            </div>
-            <div class="test-hint">
-              <i class="fas fa-hand-pointer"></i>
-              Press any key or left-click to test — matching control will light up
-            </div>
-            <table class="scheme-table">
-              <tr data-keys="KeyW,KeyA,KeyS,KeyD"><td><span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span></td><td>Movement (Up, Left, Down, Right)</td></tr>
-              <tr data-keys="leftclick"><td><span class="key">Left Click</span></td><td>Action / OK</td></tr>
-              <tr data-keys="Escape"><td><span class="key">Esc</span></td><td>Emulator options</td></tr>
-              <tr data-keys="KeyQ"><td><span class="key">Q</span></td><td>Left soft key</td></tr>
-              <tr data-keys="KeyE"><td><span class="key">E</span></td><td>Right soft key</td></tr>
-              <tr data-keys="KeyX"><td><span class="key">X</span></td><td>* key</td></tr>
-              <tr data-keys="KeyC"><td><span class="key">C</span></td><td># key</td></tr>
-              <tr data-keys="Digit0,Digit1,Digit2,Digit3,Digit4,Digit5,Digit6,Digit7,Digit8,Digit9"><td><span class="key">0</span> – <span class="key">9</span></td><td>Keypad numbers</td></tr>
-            </table>
-          </div>
-        </div>
-
-        <!-- Pro Scheme -->
-        <div class="control-scheme-panel" id="scheme-pro">
-          <div class="scheme-card">
-            <div class="scheme-header">
-              <div class="scheme-icon">🎮</div>
-              <div>
-                <div class="scheme-name">Pro Controls <span class="haptic-badge">⚡ Haptic Feedback</span></div>
-                <div class="scheme-desc">Xbox / USB controller — plug in and play with vibration</div>
-              </div>
-              <div class="connection-badges">
-                <span class="conn-badge disconnected" id="gamepad-conn-badge"><i class="fas fa-gamepad"></i> <span id="gamepad-conn-text">No Controller</span></span>
-              </div>
-            </div>
-            <div class="controller-notice" id="controller-notice">
-              <i class="fas fa-info-circle"></i>
-              Connect a USB/Bluetooth controller and press any button to activate it
-            </div>
-            <div class="test-hint">
-              <i class="fas fa-hand-pointer"></i>
-              Press any controller button to test — matching control will light up
-            </div>
-            <table class="scheme-table">
-              <tr data-buttons="12,13,14,15"><td><span class="key">D-Pad</span></td><td>Movement (Up, Down, Left, Right)</td></tr>
-              <tr data-buttons="0"><td><span class="key">A</span></td><td>Action / Enter</td></tr>
-              <tr data-buttons="1"><td><span class="key">B</span></td><td>Back / Right Soft Key</td></tr>
-              <tr data-buttons="2"><td><span class="key">X</span></td><td>Keypad 5 (Fire / Interact)</td></tr>
-              <tr data-buttons="3"><td><span class="key">Y</span></td><td>Keypad 0</td></tr>
-              <tr data-buttons="4,5"><td><span class="key">LB</span> / <span class="key">RB</span></td><td>Left / Right Soft Keys</td></tr>
-              <tr data-buttons="6,7"><td><span class="key">LT</span> / <span class="key">RT</span></td><td>* and # Keys</td></tr>
-            </table>
-          </div>
-        </div>
-
-        <div class="pin-dialog-actions" style="margin-top: 24px; gap: 12px; display: flex;">
-          <button id="controls-save-btn" class="pin-btn pin-btn-confirm" style="background: var(--accent-red); flex: 1;">Save Controls</button>
-          <button id="controls-close-btn" class="pin-btn pin-btn-cancel" style="flex: 1;">Close</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="about-modal" class="modal-overlay">
-      <div class="pin-dialog" style="max-width: 480px; text-align: left;">
-        <h2 style="text-align: center; margin-bottom: 20px;">About Roylays Plays</h2>
-        <div style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95em;">
-          <p>Roylays Plays is a modern web-based J2ME emulator, allowing you to relive the classic mobile gaming era directly in your browser.</p>
-          
-          <div style="margin-top: 24px; padding: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: var(--radius-sm);">
-            <h3 style="color: var(--text-primary); margin-top: 0; margin-bottom: 12px; font-size: 1.1em;">
-              <i class="fab fa-youtube" style="margin-right: 8px; color: #ff0000;"></i> Support My Channels
-            </h3>
-            <p style="margin-bottom: 16px; font-style: italic; color: var(--text-secondary);">
-              Please Support My Youtube Channels, As It is a small attemp of reviving to play our childhood games
-            </p>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
-                <span style="color: var(--text-secondary);">Gaming Channel (Bengali)</span>
-                <a href="https://www.youtube.com/@roylayslive" target="_blank" style="color: #ff4444; text-decoration: none; font-weight: 600;">@roylayslive <i class="fas fa-external-link-alt" style="font-size: 0.8em; margin-left: 4px;"></i></a>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
-                <span style="color: var(--text-secondary);">RoyLays (Hindi)</span>
-                <a href="https://www.youtube.com/@roylaysyt" target="_blank" style="color: #ff4444; text-decoration: none; font-weight: 600;">@roylaysyt <i class="fas fa-external-link-alt" style="font-size: 0.8em; margin-left: 4px;"></i></a>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: var(--text-secondary);">Otaku hotspot (Bengali)</span>
-                <a href="https://www.youtube.com/@otakuhotspotyt/shorts" target="_blank" style="color: #ff4444; text-decoration: none; font-weight: 600;">@otakuhotspotyt <i class="fas fa-external-link-alt" style="font-size: 0.8em; margin-left: 4px;"></i></a>
-              </div>
-            </div>
-          </div>
-
-          <div style="margin-top: 24px; padding: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: var(--radius-sm);">
-            <h3 style="color: var(--text-primary); margin-top: 0; margin-bottom: 12px; font-size: 1.1em;">
-              <i class="fas fa-lock" style="margin-right: 8px; color: var(--accent-red);"></i> Security & Access
-            </h3>
-            <p style="margin-bottom: 8px;">Some administrative actions (like adding games or wiping data) require an Access PIN.</p>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <p style="font-weight: 700; color: var(--text-primary); font-size: 1.1em; background: rgba(255, 0, 0, 0.1); display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 4px; border: 1px dashed var(--accent-red); margin: 0;">
-                Access PIN: <span id="about-pin-display" class="pin-hidden" style="color: var(--accent-red); letter-spacing: 1px; margin-left: 8px;">••••••••</span>
-              </p>
-              <button id="toggle-about-pin" class="pin-toggle-btn" title="Toggle PIN visibility">
-                <i class="fas fa-eye"></i>
-              </button>
-            </div>
-          </div>
-          <p style="margin-top: 20px; font-size: 0.85em; opacity: 0.7; text-align: center;">Powered by FreeJ2ME & CheerpJ technology.</p>
-        </div>
-        <div class="pin-dialog-actions" style="margin-top: 24px;">
-          <button id="about-close-btn" class="pin-btn pin-btn-confirm">Close</button>
         </div>
       </div>
     </div>
@@ -2019,6 +2312,26 @@
 
     <!-- Main App -->
     <div class="app-layout" id="main" style="display: none">
+
+      <!-- Mobile Navigation Bar -->
+      <nav class="mobile-nav">
+        <button class="mobile-nav-item active" data-mobile-tab="home">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </button>
+        <button class="mobile-nav-item" data-mobile-tab="games">
+          <i class="fas fa-gamepad"></i>
+          <span>My Games</span>
+        </button>
+        <button class="mobile-nav-item" data-mobile-tab="controls">
+          <i class="fas fa-sliders-h"></i>
+          <span>Controls</span>
+        </button>
+        <button class="mobile-nav-item" data-mobile-tab="about">
+          <i class="fas fa-info-circle"></i>
+          <span>About</span>
+        </button>
+      </nav>
 
       <!-- Sidebar -->
       <nav class="sidebar">
@@ -2152,8 +2465,264 @@
           <div class="section-title">
             <i class="fas fa-fire"></i> Installed Games
           </div>
+          
+          <!-- Mobile Widgets Area -->
+          <div class="mobile-widgets-container">
+            <!-- Info Widget: Big Time, Internet, Location -->
+            <div class="mobile-info-widget">
+              <div class="mobile-big-time" id="mobile-big-time">12:00</div>
+              <div class="mobile-info-row">
+                <i class="fas fa-wifi"></i>
+                <span id="mobile-wifi-status">Connected to Internet</span>
+              </div>
+              <div class="mobile-info-row">
+                <i class="fas fa-map-marker-alt"></i>
+                <span id="mobile-location">Mumbai, India</span>
+              </div>
+            </div>
+
+            <!-- Music Widget (Square Format) -->
+            <div class="mobile-music-widget sidebar-music-player">
+              <svg class="music-progress-container">
+                <path class="music-progress-path" d="M0,0"></path>
+              </svg>
+              <div class="music-top">
+                <div class="music-pin-btn">
+                  <i class="fas fa-thumbtack"></i>
+                </div>
+                <div class="music-cast-icon">
+                  <i class="fas fa-rss"></i>
+                </div>
+              </div>
+              
+              <div id="mobile-music-cover" class="music-cover"></div>
+              
+              <div class="music-info" style="margin-top: 0; z-index: 2;">
+                <div class="music-title" id="mobile-music-title">Shounen ki</div>
+                <div class="music-artist" id="mobile-music-artist">negimaavni</div>
+                
+                <!-- Mobile Progress Bar -->
+                <div class="mobile-music-progress-container">
+                  <div class="mobile-music-progress-bar" id="mobile-music-progress"></div>
+                </div>
+              </div>
+              
+              <div class="music-controls" style="z-index: 2;">
+                <button class="music-btn" id="mobile-music-prev"><i class="fas fa-step-backward"></i></button>
+                <button class="music-btn play-pause" id="mobile-music-play-pause"><i class="fas fa-play"></i></button>
+                <button class="music-btn" id="mobile-music-next"><i class="fas fa-step-forward"></i></button>
+              </div>
+            </div>
+
+            <!-- Quick Actions & Controls Status -->
+            <div class="mobile-quick-actions">
+              <div class="mobile-action-card" id="mobile-settings-btn">
+                <div class="mobile-icon-circle">
+                  <i class="fas fa-cog"></i>
+                </div>
+                <div class="mobile-status-text">
+                  <span class="mobile-status-label">Settings</span>
+                  <span class="mobile-status-value">Profile & Sync</span>
+                </div>
+              </div>
+              <div class="mobile-action-card" id="mobile-controls-btn">
+                <div class="mobile-icon-circle">
+                  <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="mobile-status-text">
+                  <span class="mobile-status-label">Controls</span>
+                  <span class="mobile-status-value" id="mobile-controls-status">Modern</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div id="game-list" class="game-cards-grid">
             <!-- Games are dynamically inserted here by launcher.js -->
+          </div>
+
+          <!-- Mobile App Grid -->
+          <div id="mobile-app-grid" class="mobile-app-grid">
+            <!-- App icons will be inserted here for mobile -->
+          </div>
+
+          <!-- Controls Modal (Moved inside content-area for mobile inline view) -->
+          <div id="controls-modal" class="modal-overlay">
+            <div class="pin-dialog" style="max-width: 600px; text-align: left; padding: 24px;">
+              <div class="glass-panel-header" style="margin-bottom: 20px;">
+                <div class="glass-panel-title">
+                  <i class="fas fa-sliders-h"></i>
+                  <span>Controls & Peripherals</span>
+                </div>
+                <div class="live-test-badge" id="live-test-badge">
+                  <span class="live-dot"></span> LIVE TEST
+                </div>
+              </div>
+
+              <!-- Control Scheme Selector Tabs -->
+              <div class="control-tabs" id="control-tabs">
+                <button class="control-tab active" data-scheme="classical">
+                  <i class="fas fa-keyboard"></i> Classical
+                </button>
+                <button class="control-tab" data-scheme="modern">
+                  <i class="fas fa-mouse-pointer"></i> Modern
+                </button>
+                <button class="control-tab" data-scheme="pro">
+                  <i class="fas fa-gamepad"></i> Pro
+                </button>
+              </div>
+
+              <!-- Classical Scheme -->
+              <div class="control-scheme-panel active" id="scheme-classical">
+                <div class="scheme-card">
+                  <div class="scheme-header">
+                    <div class="scheme-icon">🎹</div>
+                    <div>
+                      <div class="scheme-name">Classical Controls</div>
+                      <div class="scheme-desc">Traditional keyboard layout — arrow keys + number pad</div>
+                    </div>
+                    <div class="connection-badges">
+                      <span class="conn-badge connected"><i class="fas fa-keyboard"></i> Keyboard</span>
+                    </div>
+                  </div>
+                  <div class="test-hint">
+                    <i class="fas fa-hand-pointer"></i>
+                    Press any key to test — matching control will light up
+                  </div>
+                  <table class="scheme-table">
+                    <tr data-keys="ArrowUp,ArrowDown,ArrowLeft,ArrowRight"><td><span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span></td><td>Movement</td></tr>
+                    <tr data-keys="Enter"><td><span class="key">⏎ Enter</span></td><td>Action / OK</td></tr>
+                    <tr data-keys="Escape"><td><span class="key">Esc</span></td><td>Emulator options</td></tr>
+                    <tr data-keys="F1,KeyQ"><td><span class="key">F1</span> / <span class="key">Q</span></td><td>Left soft key</td></tr>
+                    <tr data-keys="F2,KeyW"><td><span class="key">F2</span> / <span class="key">W</span></td><td>Right soft key</td></tr>
+                    <tr data-keys="Digit0,Digit1,Digit2,Digit3,Digit4,Digit5,Digit6,Digit7,Digit8,Digit9"><td><span class="key">0</span> – <span class="key">9</span></td><td>Keypad numbers</td></tr>
+                    <tr data-keys="KeyE"><td><span class="key">E</span></td><td>* key</td></tr>
+                    <tr data-keys="KeyR"><td><span class="key">R</span></td><td># key</td></tr>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Modern Scheme -->
+              <div class="control-scheme-panel" id="scheme-modern">
+                <div class="scheme-card">
+                  <div class="scheme-header">
+                    <div class="scheme-icon">🖱️</div>
+                    <div>
+                      <div class="scheme-name">Modern Controls</div>
+                      <div class="scheme-desc">WASD + Mouse — familiar FPS-style layout</div>
+                    </div>
+                    <div class="connection-badges">
+                      <span class="conn-badge connected"><i class="fas fa-keyboard"></i> Keyboard</span>
+                      <span class="conn-badge connected"><i class="fas fa-mouse"></i> Mouse</span>
+                    </div>
+                  </div>
+                  <div class="test-hint">
+                    <i class="fas fa-hand-pointer"></i>
+                    Press any key or left-click to test — matching control will light up
+                  </div>
+                  <table class="scheme-table">
+                    <tr data-keys="KeyW,KeyA,KeyS,KeyD"><td><span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span></td><td>Movement (Up, Left, Down, Right)</td></tr>
+                    <tr data-keys="leftclick"><td><span class="key">Left Click</span></td><td>Action / OK</td></tr>
+                    <tr data-keys="Escape"><td><span class="key">Esc</span></td><td>Emulator options</td></tr>
+                    <tr data-keys="KeyQ"><td><span class="key">Q</span></td><td>Left soft key</td></tr>
+                    <tr data-keys="KeyE"><td><span class="key">E</span></td><td>Right soft key</td></tr>
+                    <tr data-keys="KeyX"><td><span class="key">X</span></td><td>* key</td></tr>
+                    <tr data-keys="KeyC"><td><span class="key">C</span></td><td># key</td></tr>
+                    <tr data-keys="Digit0,Digit1,Digit2,Digit3,Digit4,Digit5,Digit6,Digit7,Digit8,Digit9"><td><span class="key">0</span> – <span class="key">9</span></td><td>Keypad numbers</td></tr>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Pro Scheme -->
+              <div class="control-scheme-panel" id="scheme-pro">
+                <div class="scheme-card">
+                  <div class="scheme-header">
+                    <div class="scheme-icon">🎮</div>
+                    <div>
+                      <div class="scheme-name">Pro Controls <span class="haptic-badge">⚡ Haptic Feedback</span></div>
+                      <div class="scheme-desc">Xbox / USB controller — plug in and play with vibration</div>
+                    </div>
+                    <div class="connection-badges">
+                      <span class="conn-badge disconnected" id="gamepad-conn-badge"><i class="fas fa-gamepad"></i> <span id="gamepad-conn-text">No Controller</span></span>
+                    </div>
+                  </div>
+                  <div class="controller-notice" id="controller-notice">
+                    <i class="fas fa-info-circle"></i>
+                    Connect a USB/Bluetooth controller and press any button to activate it
+                  </div>
+                  <div class="test-hint">
+                    <i class="fas fa-hand-pointer"></i>
+                    Press any controller button to test — matching control will light up
+                  </div>
+                  <table class="scheme-table">
+                    <tr data-buttons="12,13,14,15"><td><span class="key">D-Pad</span></td><td>Movement (Up, Down, Left, Right)</td></tr>
+                    <tr data-buttons="0"><td><span class="key">A</span></td><td>Action / Enter</td></tr>
+                    <tr data-buttons="1"><td><span class="key">B</span></td><td>Back / Right Soft Key</td></tr>
+                    <tr data-buttons="2"><td><span class="key">X</span></td><td>Keypad 5 (Fire / Interact)</td></tr>
+                    <tr data-buttons="3"><td><span class="key">Y</span></td><td>Keypad 0</td></tr>
+                    <tr data-buttons="4,5"><td><span class="key">LB</span> / <span class="key">RB</span></td><td>Left / Right Soft Keys</td></tr>
+                    <tr data-buttons="6,7"><td><span class="key">LT</span> / <span class="key">RT</span></td><td>* and # Keys</td></tr>
+                  </table>
+                </div>
+              </div>
+
+              <div class="pin-dialog-actions" style="margin-top: 24px; gap: 12px; display: flex;">
+                <button id="controls-save-btn" class="pin-btn pin-btn-confirm" style="background: var(--accent-red); flex: 1;">Save Controls</button>
+                <button id="controls-close-btn" class="pin-btn pin-btn-cancel" style="flex: 1;">Close</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- About Modal (Moved inside content-area for mobile inline view) -->
+          <div id="about-modal" class="modal-overlay">
+            <div class="pin-dialog" style="max-width: 480px; text-align: left;">
+              <h2 style="text-align: center; margin-bottom: 20px;">About Roylays Plays</h2>
+              <div style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95em;">
+                <p>Roylays Plays is a modern web-based J2ME emulator, allowing you to relive the classic mobile gaming era directly in your browser.</p>
+                
+                <div style="margin-top: 24px; padding: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: var(--radius-sm);">
+                  <h3 style="color: var(--text-primary); margin-top: 0; margin-bottom: 12px; font-size: 1.1em;">
+                    <i class="fab fa-youtube" style="margin-right: 8px; color: #ff0000;"></i> Support My Channels
+                  </h3>
+                  <p style="margin-bottom: 16px; font-style: italic; color: var(--text-secondary);">
+                    Please Support My Youtube Channels, As It is a small attemp of reviving to play our childhood games
+                  </p>
+                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                      <span style="color: var(--text-secondary);">Gaming Channel (Bengali)</span>
+                      <a href="https://www.youtube.com/@roylayslive" target="_blank" style="color: #ff4444; text-decoration: none; font-weight: 600;">@roylayslive <i class="fas fa-external-link-alt" style="font-size: 0.8em; margin-left: 4px;"></i></a>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                      <span style="color: var(--text-secondary);">RoyLays (Hindi)</span>
+                      <a href="https://www.youtube.com/@roylaysyt" target="_blank" style="color: #ff4444; text-decoration: none; font-weight: 600;">@roylaysyt <i class="fas fa-external-link-alt" style="font-size: 0.8em; margin-left: 4px;"></i></a>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span style="color: var(--text-secondary);">Otaku hotspot (Bengali)</span>
+                      <a href="https://www.youtube.com/@otakuhotspotyt/shorts" target="_blank" style="color: #ff4444; text-decoration: none; font-weight: 600;">@otakuhotspotyt <i class="fas fa-external-link-alt" style="font-size: 0.8em; margin-left: 4px;"></i></a>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 24px; padding: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: var(--radius-sm);">
+                  <h3 style="color: var(--text-primary); margin-top: 0; margin-bottom: 12px; font-size: 1.1em;">
+                    <i class="fas fa-lock" style="margin-right: 8px; color: var(--accent-red);"></i> Security & Access
+                  </h3>
+                  <p style="margin-bottom: 8px;">Some administrative actions (like adding games or wiping data) require an Access PIN.</p>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <p style="font-weight: 700; color: var(--text-primary); font-size: 1.1em; background: rgba(255, 0, 0, 0.1); display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 4px; border: 1px dashed var(--accent-red); margin: 0;">
+                      Access PIN: <span id="about-pin-display" class="pin-hidden" style="color: var(--accent-red); letter-spacing: 1px; margin-left: 8px;">••••••••</span>
+                    </p>
+                    <button id="toggle-about-pin" class="pin-toggle-btn" title="Toggle PIN visibility">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+                <p style="margin-top: 20px; font-size: 0.85em; opacity: 0.7; text-align: center;">Powered by FreeJ2ME & CheerpJ technology.</p>
+              </div>
+              <div class="pin-dialog-actions" style="margin-top: 24px;">
+                <button id="about-close-btn" class="pin-btn pin-btn-confirm">Close</button>
+              </div>
+            </div>
           </div>
 
           <!-- Add / Edit Game Section -->
@@ -2718,6 +3287,12 @@
                 localStorage.setItem('roylays_control_scheme', scheme);
                 updateSchemeDisplay();
                 
+                // Update mobile status if exists
+                const mobileStatus = document.getElementById('mobile-controls-status');
+                if (mobileStatus) {
+                  mobileStatus.textContent = scheme.charAt(0).toUpperCase() + scheme.slice(1);
+                }
+                
                 const originalText = saveBtn.textContent;
                 saveBtn.textContent = "✓ Saved!";
                 saveBtn.style.background = "#2ecc71";
@@ -2738,7 +3313,8 @@
 
               document.addEventListener('keydown', (e) => {
                 const modal = document.getElementById('controls-modal');
-                if (!modal.classList.contains('active')) return;
+                const isMobileActive = document.body.classList.contains('mobile-mode-controls');
+                if (!modal.classList.contains('active') && !isMobileActive) return;
                 initAudio();
 
                 const rows = document.querySelectorAll('.scheme-table tr[data-keys]');
@@ -2752,7 +3328,8 @@
 
               document.addEventListener('mousedown', (e) => {
                 const modal = document.getElementById('controls-modal');
-                if (!modal.classList.contains('active')) return;
+                const isMobileActive = document.body.classList.contains('mobile-mode-controls');
+                if (!modal.classList.contains('active') && !isMobileActive) return;
                 if (e.button === 0) {
                   const row = document.querySelector('.scheme-table tr[data-keys*="leftclick"]');
                   if (row) {
@@ -2803,7 +3380,8 @@
 
               function updateGamepadLoop() {
                 const modal = document.getElementById('controls-modal');
-                if (modal.classList.contains('active')) {
+                const isMobileActive = document.body.classList.contains('mobile-mode-controls');
+                if (modal.classList.contains('active') || isMobileActive) {
                   const gamepads = navigator.getGamepads();
                   for (const gp of gamepads) {
                     if (gp) {

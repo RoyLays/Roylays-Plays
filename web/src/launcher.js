@@ -148,6 +148,24 @@ async function setupBackgroundMusic() {
         audio.src = song.src;
         musicTitle.textContent = song.title;
         musicArtist.textContent = song.artist;
+        
+        // Sync mobile widget
+        const mTitle = document.getElementById('mobile-music-title');
+        const mArtist = document.getElementById('mobile-music-artist');
+        const mCover = document.getElementById('mobile-music-cover');
+        const mWidget = document.querySelector('.mobile-music-widget');
+
+        if (mTitle) mTitle.textContent = song.title;
+        if (mArtist) mArtist.textContent = song.artist;
+        if (mCover) {
+            mCover.style.backgroundImage = song.bg;
+            mCover.style.backgroundSize = 'cover';
+            mCover.style.backgroundPosition = 'center';
+        }
+        if (mWidget) {
+            mWidget.style.setProperty('--music-bg', song.bg);
+        }
+
         musicBox.style.setProperty('--music-bg', song.bg);
         if (isPlaying) {
             audio.play().catch(err => console.log("Playback error:", err));
@@ -270,13 +288,48 @@ async function setupBackgroundMusic() {
                 if (isNaN(audio.duration) || audio.duration === 0 || !totalLength) return;
                 const progress = audio.currentTime / audio.duration;
                 progressPath.style.strokeDashoffset = totalLength * (1 - progress);
+
+                // Update mobile progress bar
+                const mProgress = document.getElementById('mobile-music-progress');
+                if (mProgress) {
+                    mProgress.style.width = (progress * 100) + '%';
+                }
             };
         }
     // });
 
     const updatePlayPauseBtn = () => {
         playPauseBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+        const mobilePlayBtn = document.getElementById('mobile-music-play-pause');
+        if (mobilePlayBtn) {
+            mobilePlayBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+        }
     };
+
+    const mobilePlayBtn = document.getElementById('mobile-music-play-pause');
+    const mobileNextBtn = document.getElementById('mobile-music-next');
+    const mobilePrevBtn = document.getElementById('mobile-music-prev');
+
+    if (mobilePlayBtn) {
+        mobilePlayBtn.onclick = (e) => {
+            e.stopPropagation();
+            playPauseBtn.click();
+        };
+    }
+
+    if (mobileNextBtn) {
+        mobileNextBtn.onclick = (e) => {
+            e.stopPropagation();
+            nextBtn.click();
+        };
+    }
+
+    if (mobilePrevBtn) {
+        mobilePrevBtn.onclick = (e) => {
+            e.stopPropagation();
+            prevBtn.click();
+        };
+    }
 
     playPauseBtn.onclick = (e) => {
         e.stopPropagation(); // Don't trigger the document-level autoplay
@@ -301,6 +354,9 @@ async function setupBackgroundMusic() {
     };
 
     document.addEventListener('click', startAutoplay, { once: true });
+
+    // Initialize UI with the first song
+    loadSong(currentSongIndex);
 }
 
 async function main() {
@@ -360,6 +416,155 @@ async function main() {
         activeTab = 'favorites';
         updateSidebarActive('nav-favorites');
         fillGamesList(state.games, true);
+    });
+
+    // Mobile Navigation
+    document.querySelectorAll('.mobile-nav-item').forEach(btn => {
+        btn.onclick = () => {
+            const tab = btn.dataset.mobileTab;
+            document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Switch view based on tab
+            document.body.classList.remove('mobile-mode-home', 'mobile-mode-games', 'mobile-mode-controls', 'mobile-mode-about');
+            document.body.classList.add(`mobile-mode-${tab}`);
+
+            if (tab === 'home') {
+                document.body.classList.add('mobile-mode-home');
+                fillMobileGrid(state.games);
+            } else if (tab === 'games') {
+                // Similar to "My Games" desktop section
+                document.querySelector('.section-title').scrollIntoView({ behavior: 'smooth' });
+            } else if (tab === 'controls') {
+                // In mobile mode, controls are shown inline via CSS class
+                if (window.innerWidth > 768) {
+                    document.getElementById('controls-modal').classList.add('active');
+                } else {
+                    // Ensure we scroll to top when switching to inline view
+                    document.querySelector('.content-area').scrollTop = 0;
+                }
+            } else if (tab === 'about') {
+                // In mobile mode, about is shown inline via CSS class
+                if (window.innerWidth > 768) {
+                    document.getElementById('about-modal').classList.add('active');
+                } else {
+                    // Ensure we scroll to top when switching to inline view
+                    document.querySelector('.content-area').scrollTop = 0;
+                }
+            }
+        };
+    });
+
+    // Mobile Controls Quick Action
+    const mobileControlsBtn = document.getElementById('mobile-controls-btn');
+    if (mobileControlsBtn) {
+        mobileControlsBtn.onclick = () => {
+            const controlsTab = document.querySelector('.mobile-nav-item[data-mobile-tab="controls"]');
+            if (controlsTab) controlsTab.click();
+        };
+    }
+
+    // Mobile Settings (Profile & Sync) Quick Action
+    const mobileSettingsBtn = document.getElementById('mobile-settings-btn');
+    if (mobileSettingsBtn) {
+        mobileSettingsBtn.onclick = () => {
+            document.getElementById('mobile-sync-modal').classList.add('active');
+        };
+    }
+
+    // Mobile Sync Modal Close
+    const mobileSyncCloseBtn = document.getElementById('mobile-sync-close-btn');
+    if (mobileSyncCloseBtn) {
+        mobileSyncCloseBtn.onclick = () => {
+            document.getElementById('mobile-sync-modal').classList.remove('active');
+        };
+    }
+
+    // Mobile Import/Export Data
+    const mobileImportBtn = document.getElementById('mobile-import-data-btn');
+    const mobileExportBtn = document.getElementById('mobile-export-data-btn');
+    
+    if (mobileImportBtn) {
+        mobileImportBtn.onclick = () => {
+            document.getElementById('mobile-sync-modal').classList.remove('active');
+            document.getElementById('import-data-file').click();
+        };
+    }
+    
+    if (mobileExportBtn) {
+        mobileExportBtn.onclick = () => {
+            document.getElementById('export-data-btn').click();
+        };
+    }
+
+    // Sync Mobile Time
+    const updateMobileTime = () => {
+        const timeEl = document.getElementById('mobile-big-time');
+        if (timeEl) {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 0 should be 12
+            timeEl.innerHTML = `${hours}:${minutes}<span style="font-size: 0.35em; margin-left: 5px; vertical-align: middle; opacity: 0.8;">${ampm}</span>`;
+        }
+    };
+    setInterval(updateMobileTime, 1000);
+    updateMobileTime();
+
+    // Initial mobile state
+    if (window.innerWidth <= 768) {
+        document.body.classList.add('mobile-mode-home');
+        const scheme = localStorage.getItem('roylays_control_scheme') || 'modern';
+        const statusEl = document.getElementById('mobile-controls-status');
+        if (statusEl) {
+            const name = scheme.charAt(0).toUpperCase() + scheme.slice(1);
+            statusEl.textContent = name;
+        }
+    }
+}
+
+function fillMobileGrid(games) {
+    const grid = document.getElementById('mobile-app-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const favorites = JSON.parse(localStorage.getItem('roylays_favorites') || '[]');
+
+    games.forEach(game => {
+        const isFavorite = favorites.includes(game.appId);
+        const container = document.createElement('a');
+        container.className = 'mobile-app-icon-container';
+        container.href = getPlayUrl(game.appId);
+        container.addEventListener('pointerdown', e => {
+            if (e.pointerType === 'touch') {
+                container.href = getPlayUrl(game.appId, true);
+            }
+        });
+
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'mobile-app-icon';
+        
+        const img = document.createElement('img');
+        img.src = game.icon;
+        iconDiv.appendChild(img);
+
+        // Add favorite indicator
+        if (isFavorite) {
+            const heart = document.createElement('div');
+            heart.className = 'mobile-app-favorite';
+            heart.innerHTML = '<i class="fas fa-heart"></i>';
+            iconDiv.appendChild(heart);
+        }
+
+        const name = document.createElement('div');
+        name.className = 'mobile-app-name';
+        name.textContent = game.name;
+
+        container.appendChild(iconDiv);
+        container.appendChild(name);
+        grid.appendChild(container);
     });
 }
 
@@ -925,6 +1130,9 @@ async function reloadUI() {
 
     state.games = await loadGames();
     fillGamesList(state.games, activeTab === 'favorites');
+    if (window.innerWidth <= 768) {
+        fillMobileGrid(state.games);
+    }
     setupAddMode();
 }
 
