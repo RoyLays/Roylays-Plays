@@ -43,6 +43,26 @@ let scaleSet = false;
 
 const isFerrariGT3 = sp.get('app') === 'ferrarigt3';
 
+async function maybeReadCheerpJFileText(path) {
+    const blob = await cjFileBlob(path);
+    if (blob) {
+        return await blob.text();
+    }
+}
+
+async function getDataUrlFromBlob(blob) {
+    const reader = new FileReader();
+
+    const promise = new Promise((r) => {
+        reader.onload = function () {
+            r(reader.result);
+        };
+    });
+
+    reader.readAsDataURL(blob);
+    return await promise;
+}
+
 const keyRepeatManager = new KeyRepeatManager();
 
 function getRotatedCoords(x, y) {
@@ -851,6 +871,37 @@ async function init() {
     if (sp.get('app')) {
         const app = sp.get('app');
         await ensureAppInstalled(lib, app);
+
+        // Update meta tags for social sharing (if crawler supports it)
+        const appName = await maybeReadCheerpJFileText("/files/" + app + "/name");
+        if (appName) {
+            document.title = appName + " - Roylays Plays";
+            const ogTitle = document.querySelector('meta[property="og:title"]');
+            const ogDesc = document.querySelector('meta[property="og:description"]');
+            if (ogTitle) ogTitle.setAttribute('content', appName + " — Play now on Roylays Plays!");
+            if (ogDesc) ogDesc.setAttribute('content', "Join the game and play " + appName + " directly in your browser. No download required!");
+            
+            // Try to set OG image to the app icon
+            const ogImage = document.getElementById('og-image-meta');
+            if (ogImage) {
+                // For default games, use the static icon if possible
+                const staticIcons = {
+                    'diamond_rush': 'icons/diamond_rush.png',
+                    'assassins_creed_3': 'icons/assassins_creed_3.png',
+                    'brickbreaker': 'icons/brickbreaker.png'
+                };
+                
+                if (staticIcons[app]) {
+                    ogImage.setAttribute('content', staticIcons[app]);
+                } else {
+                    const iconBlob = await cjFileBlob("/files/" + app + "/icon");
+                    if (iconBlob) {
+                        const iconUrl = await getDataUrlFromBlob(iconBlob);
+                        ogImage.setAttribute('content', iconUrl);
+                    }
+                }
+            }
+        }
 
         args = ['app', sp.get('app')];
     } else {

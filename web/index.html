@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Roylays Plays — Play Java ME games in your browser. A browser-based J2ME emulator powered by CheerpJ." />
     <title>Roylays Plays — Java ME Emulator</title>
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Roylays Plays — Java ME Emulator" />
+    <meta property="og:description" content="Play classic Java ME games in your browser. Mobile gaming nostalgia reimagined." />
+    <meta property="og:image" content="assets/favicon.png" id="og-image-meta" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="apple-touch-icon" href="assets/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -481,6 +490,7 @@
         background: rgba(0, 0, 0, 0.4);
         opacity: 0;
         transition: opacity var(--transition);
+        text-decoration: none;
       }
 
       .game-card:hover .play-overlay {
@@ -564,11 +574,43 @@
         font-weight: 500;
         cursor: pointer;
         transition: all var(--transition);
+        text-decoration: none;
       }
 
       .game-card-btn:hover {
         background: rgba(255, 255, 255, 0.12);
         color: var(--text-primary);
+        text-decoration: none;
+      }
+
+      /* Card Share Button (placed below heart in thumb area) */
+      .card-share-btn {
+        position: absolute;
+        top: 42px; /* Positioned below fav-btn (top 8px + height 30px + gap 4px) */
+        right: 8px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #007aff; /* Keep the blue color */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        transition: all 0.2s ease;
+      }
+
+      .card-share-btn:hover {
+        background: rgba(0, 0, 0, 0.6);
+        transform: scale(1.1);
+      }
+
+      .card-share-btn i {
+        font-size: 0.9em;
       }
 
       /* Empty game list */
@@ -1644,6 +1686,56 @@
         z-index: 2;
       }
 
+      .mobile-app-share {
+        position: absolute;
+        bottom: -4px;
+        right: -4px;
+        width: 22px;
+        height: 22px;
+        background: #007aff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.7em;
+        box-shadow: 0 2px 6px rgba(0, 122, 255, 0.4);
+        border: 2px solid #1a1a1a;
+        z-index: 3;
+        cursor: pointer;
+        transition: transform 0.1s ease;
+      }
+
+      .mobile-app-share:active {
+        transform: scale(1.2);
+      }
+
+      .toast {
+        visibility: hidden;
+        min-width: 250px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 50px;
+        padding: 12px 24px;
+        position: fixed;
+        z-index: 10000;
+        left: 50%;
+        bottom: 30px;
+        transform: translateX(-50%);
+        font-size: 0.9em;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: visibility 0s, opacity 0.3s ease;
+        opacity: 0;
+      }
+
+      .toast.show {
+        visibility: visible;
+        opacity: 1;
+      }
+
       .mobile-app-icon:active {
         transform: scale(0.92);
       }
@@ -1797,24 +1889,6 @@
         font-size: 0.85em;
         color: rgba(255, 255, 255, 0.6);
         margin-top: 2px;
-      }
-
-      /* Mobile Music Progress Bar */
-      .mobile-music-progress-container {
-        width: 100%;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-        margin-top: 12px;
-        overflow: hidden;
-      }
-
-      .mobile-music-progress-bar {
-        height: 100%;
-        width: 0%;
-        background: var(--accent-red);
-        box-shadow: 0 0 10px var(--accent-red-glow);
-        transition: width 0.2s linear;
       }
 
       .mobile-music-widget .music-controls {
@@ -2634,11 +2708,6 @@
               <div class="music-info" style="margin-top: 0; z-index: 2;">
                 <div class="music-title" id="mobile-music-title">Shounen ki</div>
                 <div class="music-artist" id="mobile-music-artist">negimaavni</div>
-                
-                <!-- Mobile Progress Bar -->
-                <div class="mobile-music-progress-container">
-                  <div class="mobile-music-progress-bar" id="mobile-music-progress"></div>
-                </div>
               </div>
               
               <div class="music-controls" style="z-index: 2;">

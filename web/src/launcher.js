@@ -227,13 +227,16 @@ async function setupBackgroundMusic() {
 
     // Calculate average color and set stroke (DISABLED for red border request)
     // getAverageColor('assets/music_bg.jpg').then(avgColor => {
-        if (progressPath) {
-            progressPath.style.stroke = '#ff0000'; // Set to red
-            progressPath.style.filter = 'drop-shadow(0 0 5px rgba(255, 0, 0, 0.5))'; // Red glow
-            
-            const updateDashArray = () => {
-                const container = document.querySelector('.sidebar-music-player');
-                if (!container || container.offsetWidth === 0) return 0;
+        const progressPaths = document.querySelectorAll('.music-progress-path');
+        
+        const updateDashArray = () => {
+            const lengths = [];
+            progressPaths.forEach(path => {
+                const container = path.closest('.sidebar-music-player');
+                if (!container || container.offsetWidth === 0) {
+                    lengths.push(0);
+                    return;
+                }
                 
                 const width = container.offsetWidth;
                 const height = container.offsetHeight;
@@ -256,46 +259,50 @@ async function setupBackgroundMusic() {
                            A ${r},${r} 0 0 1 ${r + inset},${inset} 
                            L ${cx + inset},${inset} Z`;
                 
-                progressPath.setAttribute('d', d);
-                const preciseLength = progressPath.getTotalLength();
+                path.setAttribute('d', d);
+                const preciseLength = path.getTotalLength();
                 
-                progressPath.style.strokeDasharray = preciseLength;
-                progressPath.style.strokeDashoffset = preciseLength;
-                return preciseLength;
-            };
+                path.style.stroke = '#ff0000'; // Set to red
+                path.style.filter = 'drop-shadow(0 0 5px rgba(255, 0, 0, 0.5))'; // Red glow
+                path.style.strokeDasharray = preciseLength;
+                lengths.push(preciseLength);
+            });
+            return lengths;
+        };
 
-            let totalLength = updateDashArray();
+        let totalLengths = updateDashArray();
+        
+        // Observer to update when container becomes visible
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                totalLengths = updateDashArray();
+            }
+        });
+        
+        document.querySelectorAll('.sidebar-music-player').forEach(container => {
+            observer.observe(container);
+        });
+
+        window.addEventListener('resize', () => {
+            totalLengths = updateDashArray();
+        });
+
+        audio.onloadedmetadata = () => {
+            totalLengths = updateDashArray();
+        };
+
+        audio.ontimeupdate = () => {
+            if (!totalLengths || totalLengths.some(l => l === 0)) totalLengths = updateDashArray();
+            if (isNaN(audio.duration) || audio.duration === 0 || !totalLengths) return;
+            const progress = audio.currentTime / audio.duration;
             
-            // Observer to update when container becomes visible
-            const observer = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting) {
-                    totalLength = updateDashArray();
+            progressPaths.forEach((path, i) => {
+                const len = totalLengths[i];
+                if (len) {
+                    path.style.strokeDashoffset = len * (1 - progress);
                 }
             });
-            const container = document.querySelector('.sidebar-music-player');
-            if (container) observer.observe(container);
-
-            window.addEventListener('resize', () => {
-                totalLength = updateDashArray();
-            });
-
-            audio.onloadedmetadata = () => {
-                totalLength = updateDashArray();
-            };
-
-            audio.ontimeupdate = () => {
-                if (totalLength === 0 || totalLength === undefined) totalLength = updateDashArray();
-                if (isNaN(audio.duration) || audio.duration === 0 || !totalLength) return;
-                const progress = audio.currentTime / audio.duration;
-                progressPath.style.strokeDashoffset = totalLength * (1 - progress);
-
-                // Update mobile progress bar
-                const mProgress = document.getElementById('mobile-music-progress');
-                if (mProgress) {
-                    mProgress.style.width = (progress * 100) + '%';
-                }
-            };
-        }
+        };
     // });
 
     const updatePlayPauseBtn = () => {
@@ -745,13 +752,14 @@ async function loadGames() {
     let needsMigration = false;
     if (installedAppsBlob) {
         const text = await installedAppsBlob.text();
-        if (text.includes("k4kur0") || text.includes("Connect4") || (!text.includes("farcry2") && !text.includes("brickbreaker"))) {
+        if (text.includes("k4kur0") || text.includes("Connect4") || (!text.includes("diamond_rush") && !text.includes("brickbreaker") && !text.includes("assassins_creed_3"))) {
             needsMigration = true;
         } else {
             // Also check if icons are missing for the new games
-            const fc2Icon = await cjFileBlob("/files/farcry2/icon");
+            const drIcon = await cjFileBlob("/files/diamond_rush/icon");
+            const ac3Icon = await cjFileBlob("/files/assassins_creed_3/icon");
             const bbIcon = await cjFileBlob("/files/brickbreaker/icon");
-            if (!fc2Icon || !bbIcon) {
+            if (!drIcon || !bbIcon || !ac3Icon) {
                 needsMigration = true;
             }
         }
@@ -817,6 +825,35 @@ function getPlayUrl(appId, mobile) {
     return url;
 }
 
+function copyGameLink(appId) {
+    const url = new URL(window.location.href);
+    url.search = ""; // Clear current search params
+    url.pathname = url.pathname.replace(/\/[^\/]*$/, "/run"); // Point to run.html
+    url.searchParams.set("app", appId);
+    
+    const shareUrl = url.toString();
+    
+    navigator.clipboard.writeText(shareUrl).then(() => {
+        showToast("Link copied to clipboard!");
+    }).catch(err => {
+        console.error("Could not copy link:", err);
+    });
+}
+
+function showToast(message) {
+    let toast = document.getElementById("toast-notification");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toast-notification";
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.className = "toast show";
+    setTimeout(() => {
+        toast.className = "toast";
+    }, 3000);
+}
+
 function fillGamesList(games, filterFavorites = false) {
     const container = document.getElementById("game-list");
     container.innerHTML = "";
@@ -864,6 +901,18 @@ function fillGamesList(games, filterFavorites = false) {
             }
         };
         thumb.appendChild(favBtn);
+
+        // Share button in card thumb
+        const cardShare = document.createElement("button");
+        cardShare.className = "card-share-btn";
+        cardShare.innerHTML = '<i class="fas fa-share-alt"></i>';
+        cardShare.title = "Share Game";
+        cardShare.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            copyGameLink(game.appId);
+        };
+        thumb.appendChild(cardShare);
 
         // Play overlay
         const playOverlay = document.createElement("a");

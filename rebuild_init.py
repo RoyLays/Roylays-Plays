@@ -43,8 +43,17 @@ def create_game_folder(app_id, jar_path, display_name):
         try:
             with zipfile.ZipFile(jar_path, 'r') as jar:
                 with jar.open(icon_path) as icon_file:
+                    icon_data = icon_file.read()
                     with open(f"tmp_init/{app_id}/icon", "wb") as f:
-                        f.write(icon_file.read())
+                        f.write(icon_data)
+                    
+                    # Also save to web/icons for social previews
+                    os.makedirs("web/icons", exist_ok=True)
+                    # Determine extension from original path
+                    ext = os.path.splitext(icon_path)[1] or ".png"
+                    with open(f"web/icons/{app_id}{ext}", "wb") as f:
+                        f.write(icon_data)
+                        
             print(f"Extracted icon for {app_id} from {icon_path}")
         except Exception as e:
             print(f"Could not extract icon for {app_id}: {e}")
@@ -58,11 +67,12 @@ def main():
         shutil.rmtree("tmp_init")
     os.makedirs("tmp_init")
     
-    create_game_folder("farcry2", "web/farcry2.jar", "Far Cry 2")
+    create_game_folder("diamond_rush", "web/diamond_rush.jar", "Diamond Rush")
+    create_game_folder("assassins_creed_3", "web/assassins_creed_3.jar", "Assassin's Creed III")
     create_game_folder("brickbreaker", "web/brickbreaker.jar", "Brick Breaker Revolution")
     
     with open("tmp_init/apps.list", "w") as f:
-        f.write("farcry2\nbrickbreaker\n")
+        f.write("diamond_rush\nassassins_creed_3\nbrickbreaker\n")
         
     # Create the zip
     shutil.make_archive("new_init", "zip", "tmp_init")
