@@ -740,7 +740,24 @@ async function loadGames() {
     const apps = [];
 
     let installedAppsBlob = await cjFileBlob("/files/apps.list");
-    if (!installedAppsBlob) {
+    
+    // Check if we need to migrate from old defaults or if it's a fresh install
+    let needsMigration = false;
+    if (installedAppsBlob) {
+        const text = await installedAppsBlob.text();
+        if (text.includes("k4kur0") || text.includes("Connect4") || (!text.includes("farcry2") && !text.includes("brickbreaker"))) {
+            needsMigration = true;
+        } else {
+            // Also check if icons are missing for the new games
+            const fc2Icon = await cjFileBlob("/files/farcry2/icon");
+            const bbIcon = await cjFileBlob("/files/brickbreaker/icon");
+            if (!fc2Icon || !bbIcon) {
+                needsMigration = true;
+            }
+        }
+    }
+
+    if (!installedAppsBlob || needsMigration) {
         const res = await fetch("init.zip");
         const ab = await res.arrayBuffer();
         await launcherUtil.importData(new Int8Array(ab));
@@ -749,7 +766,10 @@ async function loadGames() {
     }
 
     if (installedAppsBlob) {
-        const installedIds = (await installedAppsBlob.text()).trim().split("\n");
+        let installedIds = (await installedAppsBlob.text()).trim().split("\n");
+        
+        // Filter out uninstalled games
+        installedIds = installedIds.filter(id => id !== "k4kur0" && id !== "Connect4" && id.trim() !== "");
 
         for (const appId of installedIds) {
             const napp = {
