@@ -759,20 +759,20 @@
 
         /* In landscape mode on mobile, ensure keys are not blocked */
         body.kbd-landscape #screen-area {
-            left: clamp(160px, 22vw, 260px);
-            right: clamp(160px, 22vw, 260px);
+            left: clamp(200px, 30vw, 400px);
+            right: clamp(200px, 30vw, 400px);
             background: black; /* Solid background for game area */
         }
 
         body.kbd-landscape #left-keys,
         body.kbd-landscape #right-keys {
-            width: clamp(160px, 22vw, 260px);
-            background: rgba(15, 15, 15, 0.95); /* Even more opaque */
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            width: clamp(200px, 30vw, 400px);
+            background: rgba(15, 15, 15, 0.98); /* Near opaque for solid look */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             z-index: 150; 
-            padding: 8px; 
-            border-color: rgba(255, 255, 255, 0.1);
+            padding: 12px; 
+            border-color: rgba(255, 255, 255, 0.15);
         }
         
         /* Prominent Maximize button in mobile landscape */
