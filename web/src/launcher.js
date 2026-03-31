@@ -374,7 +374,7 @@ async function handleFullscreenRecommendation() {
     else if (hour >= 17 && hour < 21) greeting = "Good Evening";
     else if (hour >= 21 || hour < 5) greeting = "Good Night";
     
-    greetingEl.textContent = greeting;
+    greetingEl.textContent = `${greeting} - from team Roylays`;
 
     // Show modal
     modal.classList.add('active');

@@ -704,16 +704,9 @@
 
     /* Show portrait keypad in portrait orientation */
     @media (orientation: portrait) {
-        #portrait-keypad {
-            display: flex;
-            /* Height = keypad rows + 160px music card */
-            height: min(52vmax, 480px);
-            max-height: calc(100dvh - 120px);
-        }
-
-        /* Push screen-area up to not overlap — same value as keypad height above */
+        /* Hide screen area in portrait to force rotation */
         #screen-area {
-            bottom: min(52vmax, 480px);
+            display: none !important;
         }
 
         /* Hide landscape panels in portrait */
@@ -725,189 +718,114 @@
 
     /* Compact sizing for short/small screens (e.g. iPhone SE) */
     @media (orientation: portrait) and (max-height: 700px) {
-        #portrait-keypad {
-            padding: 3px 5px 4px;
-            gap: 2px;
-            height: min(56vmax, 420px);
+        /* Portrait keypad is gone, no need for compact sizing here */
+    }
+
+    /* ===== MOBILE LANDSCAPE & FULLSCREEN OPTIMIZATIONS ===== */
+    /* On mobile screens, hide side banners and top branding that waste space */
+    @media (max-width: 1024px) {
+        .brand-overlay,
+        .scheme-indicator {
+            display: none !important;
         }
 
-        #screen-area {
-            bottom: min(56vmax, 420px);
+        /* Hide arcade frame side panels and bezels on mobile to maximize screen real estate */
+        .arcade-side,
+        .arcade-bezel-top,
+        .arcade-bezel-bottom {
+            display: none !important;
         }
 
-        .portrait-nav-row.top-nav {
-            height: 32px;
+        /* Adjust arcade frame container if active */
+        .arcade-frame.active {
+            display: block; /* No flexbox since side panels are gone */
         }
 
-        .portrait-nav-row.bot-nav {
-            height: 26px;
+        /* Let the game hole take full space and remove shadows/vignettes that dim the mobile screen */
+        .arcade-screen-hole {
+            box-shadow: none;
+            background: transparent;
         }
 
-        .portrait-num-grid {
-            gap: 2px;
-            min-height: 110px;
+        .arcade-screen-hole::before,
+        .arcade-screen-hole::after {
+            display: none !important;
         }
 
-        .portrait-keypad-sep {
-            margin: 0 6px;
+        /* Ensure game container fills the gap if frame is active */
+        .arcade-center {
+            height: 100%;
         }
 
-        #portrait-keypad .key {
-            font-size: 1em;
+        /* In landscape mode on mobile, ensure keys are not blocked */
+        body.kbd-landscape #screen-area {
+            left: clamp(140px, 18vw, 220px);
+            right: clamp(140px, 18vw, 220px);
         }
 
-        #portrait-keypad .portrait-num-grid .key {
+        body.kbd-landscape #left-keys,
+        body.kbd-landscape #right-keys {
+            width: clamp(140px, 18vw, 220px);
+            background: rgba(10, 10, 10, 0.85); /* Slightly transparent background for modern look */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 150; /* Above the game area if needed */
+        }
+        
+        /* Smaller font size for keys in mobile landscape */
+        body.kbd-landscape .key {
             font-size: 1.1em;
         }
-
-        /* Shrink music card on small screens */
-        .mobile-music-card {
-            height: 100px;
-        }
-
-        .mobile-music-card .music-cover {
-            width: 56px;
-            height: 56px;
+        
+        body.kbd-landscape .arrow-key {
+            font-size: 1.4em;
         }
     }
 
-    #portrait-keypad .key {
-        /* Nokia sculpted key look */
-        background: linear-gradient(170deg, #2e2e2e 0%, #1a1a1a 55%, #141414 100%);
-        border: 1px solid #3a3a3a;
-        border-bottom: 2px solid #0a0a0a;
-        border-radius: 8px;
-        box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.09),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.5),
-            0 2px 4px rgba(0, 0, 0, 0.6);
-        color: #f0f0f0;
-        font-family: var(--font-body);
-        font-size: 1.25em;
-        font-weight: 700;
-        letter-spacing: -0.5px;
-        cursor: pointer;
-        display: flex;
+    /* ===== ROTATION OVERLAY (PORTRAIT ONLY) ===== */
+    .rotation-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: #111;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        user-select: none;
-        transition: background 0.08s ease, transform 0.08s ease, box-shadow 0.08s ease;
-        line-height: 1;
-        min-height: 0;
-        padding: 2px 2px;
-        -webkit-tap-highlight-color: transparent;
-        touch-action: none;
+        color: white;
+        padding: 20px;
     }
 
-    /* ABC / DEF sub-labels */
-    #portrait-keypad .key span {
-        font-size: 0.33em;
-        font-weight: 500;
-        margin-top: 1px;
-        color: rgba(200, 200, 200, 0.55);
-        letter-spacing: 1px;
-        line-height: 1;
-    }
-
-    /* Pressed state */
-    #portrait-keypad .key.active {
-        background: linear-gradient(170deg, #3a1010 0%, #220808 100%);
-        border-color: var(--accent-red);
-        border-bottom-color: #550000;
-        color: #ff5555;
-        box-shadow:
-            inset 0 1px 0 rgba(255, 60, 60, 0.12),
-            0 1px 2px rgba(0, 0, 0, 0.8);
-        transform: translateY(1px);
-    }
-
-    #portrait-keypad .key.active span {
-        color: rgba(255, 80, 80, 0.5);
-    }
-
-    /* ===== NAV CLUSTER SPECIAL STYLES ===== */
-
-    /* OK button — prominent, red-accent */
-    #portrait-keypad .key[data-key="Enter"] {
-        background: linear-gradient(160deg, #3d1212 0%, #220808 100%);
-        border-color: rgba(255, 0, 0, 0.35);
-        border-bottom-color: #330000;
+    .rotation-overlay i {
+        font-size: 4em;
         color: var(--accent-red);
-        font-size: 0.9em;
+        margin-bottom: 20px;
+        animation: rotateIcon 2s infinite ease-in-out;
+    }
+
+    .rotation-overlay h2 {
+        font-size: 1.8em;
         font-weight: 800;
-        letter-spacing: 1px;
-        box-shadow:
-            inset 0 1px 0 rgba(255, 80, 80, 0.15),
-            0 0 10px rgba(200, 0, 0, 0.2),
-            0 2px 4px rgba(0, 0, 0, 0.7);
+        margin-bottom: 10px;
     }
 
-    /* Arrow keys — slightly lighter, no sub-label */
-    #portrait-keypad .key[data-key^="Arrow"] {
-        font-size: 1.5em;
-        background: linear-gradient(170deg, #303030 0%, #1e1e1e 100%);
+    .rotation-overlay p {
+        color: var(--text-secondary);
+        font-size: 1.1em;
     }
 
-    /* L-SOFT / R-SOFT */
-    #portrait-keypad .key[data-key="F1"],
-    #portrait-keypad .key[data-key="F2"] {
-        background: linear-gradient(170deg, #1a2a2e 0%, #0d1a1e 100%);
-        border-color: rgba(0, 229, 255, 0.2);
-        border-bottom-color: #051015;
-        color: rgba(0, 210, 240, 0.9);
-        font-size: 0.62em;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        box-shadow:
-            inset 0 1px 0 rgba(0, 229, 255, 0.08),
-            0 2px 4px rgba(0, 0, 0, 0.6);
+    @keyframes rotateIcon {
+        0% { transform: rotate(0deg); }
+        50% { transform: rotate(-90deg); }
+        100% { transform: rotate(0deg); }
     }
 
-    /* CALL button — green Nokia phone */
-    #portrait-keypad .key[data-key="F3"] {
-        background: linear-gradient(160deg, #0d2e14 0%, #071a0b 100%);
-        border-color: rgba(46, 204, 113, 0.35);
-        border-bottom-color: #041008;
-        color: #3ddc84;
-        font-size: 1.3em;
-        box-shadow:
-            inset 0 1px 0 rgba(60, 220, 100, 0.12),
-            0 0 8px rgba(40, 180, 80, 0.15),
-            0 2px 4px rgba(0, 0, 0, 0.7);
+    @media (orientation: portrait) and (max-width: 1024px) {
+        .rotation-overlay {
+            display: flex;
+        }
     }
-
-    /* BACK/ESC — red Nokia end-call style */
-    #portrait-keypad .key[data-key="Escape"] {
-        background: linear-gradient(160deg, #2e0d0d 0%, #1a0707 100%);
-        border-color: rgba(255, 50, 50, 0.35);
-        border-bottom-color: #1a0000;
-        color: #ff4444;
-        font-size: 1.3em;
-        box-shadow:
-            inset 0 1px 0 rgba(255, 80, 80, 0.12),
-            0 0 8px rgba(180, 40, 40, 0.15),
-            0 2px 4px rgba(0, 0, 0, 0.7);
-    }
-
-    /* MAXIMIZE button */
-    #portrait-keypad .key[data-key="Maximize"] {
-        font-size: 1em;
-        color: rgba(200, 200, 200, 0.7);
-    }
-
-    /* ===== NUMBER KEY SPECIAL — big bold digits ===== */
-    #portrait-keypad .portrait-num-grid .key {
-        font-size: 1.35em;
-        border-radius: 7px;
-    }
-
-    /* Wider pill row feel for each number row via slightly taller keys */
-    #portrait-keypad .portrait-num-grid .key:nth-child(n) {
-        border-radius: 8px;
-    }
-
 
     /* ===== MOBILE MUSIC CARD (portrait — clones desktop sidebar player) ===== */
     /* Shown only in portrait mode, below the numpad. Same widget as desktop but rectangular. */
@@ -1300,75 +1218,13 @@
         </div>
     </div>
 
-    <!-- ===== PORTRAIT BOTTOM KEYPAD ===== -->
-    <!-- Shown automatically on portrait/vertical screens via CSS media query -->
-    <div id="portrait-keypad" class="keypad-part" aria-label="Mobile Keypad">
-
-        <!-- Top nav: L-SOFT | ↑ | OK (center, larger) | ↓ | R-SOFT -->
-        <div class="portrait-nav-row top-nav">
-            <button data-key="F1" class="key" aria-label="Soft Left">L<span>SOFT</span></button>
-            <button data-key="ArrowUp" class="key" aria-label="Up">↑</button>
-            <button data-key="Enter" class="key" aria-label="OK">OK</button>
-            <button data-key="ArrowDown" class="key" aria-label="Down">↓</button>
-            <button data-key="F2" class="key" aria-label="Soft Right">R<span>SOFT</span></button>
-        </div>
-
-        <!-- Bottom nav: CALL | ← | BACK/ESC | → | MAXIMIZE -->
-        <div class="portrait-nav-row bot-nav">
-            <button data-key="F3" class="key" aria-label="Call">📞</button>
-            <button data-key="ArrowLeft" class="key" aria-label="Left">←</button>
-            <button data-key="Escape" class="key" aria-label="Back">⌫</button>
-            <button data-key="ArrowRight" class="key" aria-label="Right">→</button>
-            <button data-key="Maximize" class="key" aria-label="Scale">⛶</button>
-        </div>
-
-        <!-- Thin divider between nav and numpad -->
-        <div class="portrait-keypad-sep"></div>
-
-        <!-- Numpad 1–9, *, 0, # -->
-        <div class="portrait-num-grid">
-            <button data-key="Digit1" class="key">1</button>
-            <button data-key="Digit2" class="key">2<span>ABC</span></button>
-            <button data-key="Digit3" class="key">3<span>DEF</span></button>
-            <button data-key="Digit4" class="key">4<span>GHI</span></button>
-            <button data-key="Digit5" class="key">5<span>JKL</span></button>
-            <button data-key="Digit6" class="key">6<span>MNO</span></button>
-            <button data-key="Digit7" class="key">7<span>PQRS</span></button>
-            <button data-key="Digit8" class="key">8<span>TUV</span></button>
-            <button data-key="Digit9" class="key">9<span>WXYZ</span></button>
-            <button data-key="NumpadAsterisk" class="key">*</button>
-            <button data-key="Digit0" class="key">0<span>+</span></button>
-            <button data-key="NumpadDivide" class="key">#</button>
-        </div>
-
-        <!-- Thin divider before mobile music card -->
-        <div class="portrait-keypad-sep"></div>
-
-        <!-- Mobile Music Card: identical to desktop sidebar player, but rectangular (wider) -->
-        <div class="mobile-music-card" id="mobile-music-card">
-            <!-- SVG perimeter progress ring, same as desktop -->
-            <svg class="music-progress-container" id="mobile-music-progress-svg">
-                <path class="music-progress-path" id="mobile-music-progress-path" d="M0,0"></path>
-            </svg>
-            <!-- Left: cover art -->
-            <div class="mmc-left">
-                <div class="music-cover" id="mobile-music-cover"></div>
-            </div>
-            <!-- Right: title, artist, controls -->
-            <div class="mmc-right">
-                <div class="mmc-title-row">
-                    <div class="music-title" id="mobile-music-title">Loading...</div>
-                    <div class="music-cast-icon"><i class="fas fa-rss"></i></div>
-                </div>
-                <div class="music-artist" id="mobile-music-artist">Loading...</div>
-                <div class="music-controls">
-                    <button class="music-btn" id="mobile-music-prev" aria-label="Previous"><i class="fas fa-step-backward"></i></button>
-                    <button class="music-btn play-pause" id="mobile-music-play-pause" aria-label="Play/Pause"><i class="fas fa-play"></i></button>
-                    <button class="music-btn" id="mobile-music-next" aria-label="Next"><i class="fas fa-step-forward"></i></button>
-                </div>
-            </div>
-        </div>
+    <!-- ===== ROTATION OVERLAY (FORCED LANDSCAPE) ===== -->
+    <div class="rotation-overlay">
+        <i class="fas fa-mobile-alt"></i>
+        <h2>Please Rotate Your Device</h2>
+        <p>This game is best played in Landscape mode.</p>
     </div>
+
     <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>
     <script type="module" src="src/main.js"></script>
 </body>
