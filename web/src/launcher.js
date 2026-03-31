@@ -752,7 +752,10 @@ async function loadGames() {
     let needsMigration = false;
     if (installedAppsBlob) {
         const text = await installedAppsBlob.text();
-        if (text.includes("k4kur0") || text.includes("Connect4") || (!text.includes("diamond_rush") && !text.includes("brickbreaker") && !text.includes("assassins_creed_3"))) {
+        const requiredGames = ["diamond_rush", "brickbreaker", "assassins_creed_3"];
+        const hasAllGames = requiredGames.every(id => text.includes(id));
+
+        if (text.includes("k4kur0") || text.includes("Connect4") || !hasAllGames) {
             needsMigration = true;
         } else {
             // Also check if icons are missing for the new games
@@ -766,7 +769,7 @@ async function loadGames() {
     }
 
     if (!installedAppsBlob || needsMigration) {
-        const res = await fetch("init.zip");
+        const res = await fetch("init.zip?v=" + Date.now());
         const ab = await res.arrayBuffer();
         await launcherUtil.importData(new Int8Array(ab));
 
