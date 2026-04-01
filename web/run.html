@@ -733,9 +733,24 @@
     /* ===== MOBILE LANDSCAPE & FULLSCREEN OPTIMIZATIONS ===== */
     /* On mobile screens, hide side banners and top branding that waste space */
     @media (max-width: 1024px) {
-        .brand-overlay,
         .scheme-indicator {
             display: none !important;
+        }
+
+        .brand-overlay {
+            /* Make it more compact on mobile but KEEP it visible for navigation */
+            top: 8px;
+            left: 8px;
+            padding: 4px 10px 4px 6px;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .brand-overlay img {
+            width: 24px;
+        }
+
+        .brand-overlay .brand-name {
+            font-size: 0.75em;
         }
 
         /* Hide arcade frame side panels and bezels on mobile to maximize screen real estate */

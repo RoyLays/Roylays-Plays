@@ -20,7 +20,21 @@ const sp = new URLSearchParams(location.search);
 
 const cheerpjWebRoot = '/app' + location.pathname.replace(/\/[^/]*$/, '');
 
-let isMobile = sp.get('mobile');
+// Auto-detect mobile if not specified in URL
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+let isMobile = sp.get('mobile') === '1' || (sp.get('mobile') === null && isMobileDevice);
+
+// If opened directly via link, ensure "Back" button leads to home screen
+if (window.history.length === 1) {
+    window.history.replaceState({ page: 'home' }, '', './');
+    window.history.pushState({ page: 'game' }, '', window.location.href);
+}
+
+window.onpopstate = function (event) {
+    if (event.state && event.state.page === 'home') {
+        window.location.href = './';
+    }
+};
 
 // Read control scheme from localStorage or auto-detect
 let controlScheme = sp.get('scheme') || localStorage.getItem('roylays_control_scheme');
