@@ -733,24 +733,9 @@
     /* ===== MOBILE LANDSCAPE & FULLSCREEN OPTIMIZATIONS ===== */
     /* On mobile screens, hide side banners and top branding that waste space */
     @media (max-width: 1024px) {
+        .brand-overlay,
         .scheme-indicator {
             display: none !important;
-        }
-
-        .brand-overlay {
-            /* Make it more compact on mobile but KEEP it visible for navigation */
-            top: 8px;
-            left: 8px;
-            padding: 4px 10px 4px 6px;
-            background: rgba(0, 0, 0, 0.6);
-        }
-
-        .brand-overlay img {
-            width: 24px;
-        }
-
-        .brand-overlay .brand-name {
-            font-size: 0.75em;
         }
 
         /* Hide arcade frame side panels and bezels on mobile to maximize screen real estate */
@@ -781,11 +766,17 @@
             height: 100%;
         }
 
-        /* In landscape mode on mobile, ensure keys are not blocked */
+        /* In landscape mode on mobile, ensure keys are not blocked and remove the black bezel */
         body.kbd-landscape #screen-area {
             left: clamp(200px, 30vw, 400px);
             right: clamp(200px, 30vw, 400px);
-            background: black; /* Solid background for game area */
+            background: transparent; /* Remove solid black background */
+            box-shadow: none;
+        }
+
+        /* Optional: Add a subtle glow to the game area instead of a hard black border */
+        body.kbd-landscape #display {
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
         }
 
         body.kbd-landscape #left-keys,
