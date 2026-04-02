@@ -93,6 +93,12 @@ function getAverageColor(imageSrc) {
 async function setupBackgroundMusic() {
     const playlist = [
         {
+            src: 'assets/hanuman_returns.mp3',
+            title: 'Hanuman Returns',
+            artist: 'Daler Mehndi',
+            bg: 'url("assets/hanuman_returns_bg.jpg")'
+        },
+        {
             src: 'assets/bg_music.mp3',
             title: 'Shounen ki',
             artist: 'negimaavni',
