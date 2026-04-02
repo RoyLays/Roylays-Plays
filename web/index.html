@@ -2920,6 +2920,9 @@
                     <button id="toggle-about-pin" class="pin-toggle-btn" title="Toggle PIN visibility">
                       <i class="fas fa-eye"></i>
                     </button>
+                    <button id="copy-about-pin" class="pin-toggle-btn" title="Copy PIN" style="color: var(--accent-cyan);">
+                      <i class="fas fa-copy"></i>
+                    </button>
                   </div>
                 </div>
                 <p style="margin-top: 20px; font-size: 0.85em; opacity: 0.7; text-align: center;">Powered by FreeJ2ME & CheerpJ technology.</p>
@@ -3632,10 +3635,19 @@
                 if (pinVisible) {
                   aboutPinDisplay.textContent = actualPin;
                   toggleAboutPinBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                  if (typeof showToast === 'function') showToast("PIN Unhidden");
                 } else {
                   aboutPinDisplay.textContent = "••••••••";
                   toggleAboutPinBtn.innerHTML = '<i class="fas fa-eye"></i>';
+                  if (typeof showToast === 'function') showToast("PIN Hidden");
                 }
+              });
+
+              const copyAboutPinBtn = document.getElementById('copy-about-pin');
+              copyAboutPinBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(actualPin).then(() => {
+                  if (typeof showToast === 'function') showToast("PIN Copied");
+                });
               });
 
               // ================================================

@@ -182,12 +182,14 @@ async function setupBackgroundMusic() {
         e.stopPropagation();
         currentSongIndex = (currentSongIndex + 1) % playlist.length;
         loadSong(currentSongIndex);
+        showToast("Next Track");
     };
 
     prevBtn.onclick = (e) => {
         e.stopPropagation();
         currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
         loadSong(currentSongIndex);
+        showToast("Previous Track");
     };
 
     audio.onended = () => {
@@ -216,6 +218,9 @@ async function setupBackgroundMusic() {
                 isPlaying
             };
             localStorage.setItem('music_state', JSON.stringify(musicState));
+            showToast("Music Pinned");
+        } else {
+            showToast("Music Unpinned");
         }
     };
 
@@ -348,8 +353,11 @@ async function setupBackgroundMusic() {
         e.stopPropagation(); // Don't trigger the document-level autoplay
         if (isPlaying) {
             audio.pause();
+            showToast("Music Paused");
         } else {
-            audio.play().catch(err => console.log("Autoplay blocked, waiting for interaction", err));
+            audio.play().then(() => {
+                showToast("Music Playing");
+            }).catch(err => console.log("Autoplay blocked, waiting for interaction", err));
         }
         isPlaying = !isPlaying;
         updatePlayPauseBtn();
@@ -582,11 +590,15 @@ async function main() {
     // Mobile Fullscreen Toggles
     const toggleFS = () => {
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
+            document.documentElement.requestFullscreen().then(() => {
+                showToast("Entered Fullscreen");
+            }).catch(err => {
                 console.error(`Error attempting to enable full-screen mode: ${err.message}`);
             });
         } else {
-            document.exitFullscreen();
+            document.exitFullscreen().then(() => {
+                showToast("Exited Fullscreen");
+            });
         }
     };
 
@@ -858,6 +870,12 @@ function showToast(message) {
     }
     toast.textContent = message;
     toast.className = "toast show";
+    
+    // Vibration for mobile devices
+    if (navigator.vibrate) {
+        navigator.vibrate(50); // Short 50ms vibration
+    }
+
     setTimeout(() => {
         toast.className = "toast";
     }, 3000);
@@ -1238,6 +1256,7 @@ function handleOptionalJadFileUpload(e) {
 
 async function doAddSaveGame() {
     document.getElementById("add-save-button").disabled = true;
+    const isAdding = !!state.currentGame.jarFile;
 
     readUI(state.currentGame);
 
@@ -1254,6 +1273,7 @@ async function doAddSaveGame() {
             jappProps,
             jsysProps
         );
+        showToast("Game Installed");
     } else {
         await launcherUtil.saveApp(
             state.currentGame.appId,
@@ -1261,6 +1281,7 @@ async function doAddSaveGame() {
             jappProps,
             jsysProps
         );
+        showToast("Game Saved");
     }
 
     reloadUI();
@@ -1325,11 +1346,13 @@ async function reloadUI() {
 
 async function doUninstallGame(appId) {
     await launcherUtil.uninstallApp(appId);
+    showToast("Game Uninstalled");
     await reloadUI();
 }
 
 async function doWipeData(appId) {
     await launcherUtil.wipeAppData(appId);
+    showToast("Game Data Wiped");
     document.getElementById("wipe-data-btn").disabled = false;
 }
 
@@ -1343,6 +1366,7 @@ function doImportData(e) {
             try {
                 const arrayBuffer = reader.result;
                 await launcherUtil.importData(new Int8Array(arrayBuffer));
+                showToast("Data Imported");
                 await reloadUI();
             } catch (error) {
                 console.error("Error importing data:", error);
@@ -1365,6 +1389,7 @@ async function doExportData() {
 
         downloadLink.href = objectURL;
         downloadLink.click();
+        showToast("Data Exported");
         setTimeout(() => URL.revokeObjectURL(objectURL), 1000);
     } catch (error) {
         console.error("Error exporting data:", error);
